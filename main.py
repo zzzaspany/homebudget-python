@@ -581,7 +581,7 @@ def api_send_email_notifications(current_user: UserProfile = Depends(get_current
 
 # --- REPORTS EXPORT ENDPOINTS (PDF & CSV) ---
 @app.get("/api/reports/csv")
-def api_export_csv_report(current_user: UserProfile = Depends(get_current_user)):
+def api_export_csv_report(lang: str = "pl", current_user: UserProfile = Depends(get_current_user)):
     """Eksport rocznego/miesięcznego zestawienia budżetu domowego do pliku CSV z kodowaniem UTF-8 BOM."""
     try:
         dashboard_data = api_get_expenses(current_user)
@@ -592,40 +592,128 @@ def api_export_csv_report(current_user: UserProfile = Depends(get_current_user))
         output = io.StringIO()
         writer = csv.writer(output, delimiter=";")
 
-        writer.writerow(["HOMEBUDGET — RAPORT KOSZTÓW UTRZYMANIA DOMU"])
-        writer.writerow(["Data wygenerowania", datetime.datetime.now().strftime("%Y-%m-%d %H:%M")])
-        writer.writerow(["Użytkownik", current_user.name])
-        writer.writerow([])
-        writer.writerow(["PODSUMOWANIE KPI"])
-        writer.writerow(["Średniomiesięczny Budżet (zł)", kpis.get("pro_rated_monthly", 0)])
-        writer.writerow(["Miesięczna Rezerwa (Sinking Fund) (zł)", kpis.get("sinking_fund_total", 0)])
-        writer.writerow(["Zobowiązania Miesięczne (zł)", kpis.get("monthly_total", 0)])
-        writer.writerow(["Zobowiązania Roczne (zł)", kpis.get("yearly_total", 0)])
-        writer.writerow([])
-        writer.writerow(["WYKAZ WYDATKÓW CYKLICZNYCH"])
-        writer.writerow(["Nazwa wydatku", "Kwota (zł)", "Częstotliwość", "Dzień płatności", "Miesiąc", "Kategoria", "Rachunek Zmienny", "Status"])
+        # Translate category map
+        category_map_en = {
+            "Serwisy i Przeglądy": "Maintenance & Inspections",
+            "Bufor i Rezerwy": "Buffer & Reserves",
+            "Media i Eksploatacja": "Utilities & Operations",
+            "Podatki": "Taxes",
+            "Kredyt i Ubezpieczenia": "Loans & Insurance",
+            "Inne": "Other",
+            "Stałe Opłaty": "Fixed Fees",
+            "Podatki i Ubezpieczenia": "Taxes & Insurance"
+        }
+        
+        month_names_pl = ["Sty", "Lut", "Mar", "Kwi", "Maj", "Cze", "Lip", "Sie", "Wrz", "Paź", "Lis", "Gru"]
+        month_names_en = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        month_names = month_names_pl if lang == "pl" else month_names_en
+
+        if lang == "pl":
+            writer.writerow(["HOMEBUDGET — RAPORT KOSZTÓW UTRZYMANIA DOMU"])
+            writer.writerow(["Data wygenerowania", datetime.datetime.now().strftime("%Y-%m-%d %H:%M")])
+            writer.writerow(["Użytkownik", current_user.name])
+            writer.writerow([])
+            writer.writerow(["PODSUMOWANIE KPI"])
+            writer.writerow(["Średniomiesięczny Budżet (zł)", kpis.get("pro_rated_monthly", 0)])
+            writer.writerow(["Miesięczna Rezerwa (Sinking Fund) (zł)", kpis.get("sinking_fund_total", 0)])
+            writer.writerow(["Zobowiązania Miesięczne (zł)", kpis.get("monthly_total", 0)])
+            writer.writerow(["Zobowiązania Roczne (zł)", kpis.get("yearly_total", 0)])
+            writer.writerow([])
+            writer.writerow(["WYKAZ WYDATKÓW CYKLICZNYCH"])
+            writer.writerow(["Nazwa wydatku", "Kwota (zł)", "Częstotliwość", "Dzień płatności", "Miesiąc", "Kategoria", "Rachunek Zmienny", "Status"])
+        else:
+            writer.writerow(["HOMEBUDGET — HOME MAINTENANCE EXPENSE REPORT"])
+            writer.writerow(["Generation Date", datetime.datetime.now().strftime("%Y-%m-%d %H:%M")])
+            writer.writerow(["User", current_user.name])
+            writer.writerow([])
+            writer.writerow(["KPI SUMMARY"])
+            writer.writerow(["Average Monthly Budget (PLN)", kpis.get("pro_rated_monthly", 0)])
+            writer.writerow(["Monthly Savings Reserve (Sinking Fund) (PLN)", kpis.get("sinking_fund_total", 0)])
+            writer.writerow(["Monthly Expenses (PLN)", kpis.get("monthly_total", 0)])
+            writer.writerow(["Yearly Expenses (PLN)", kpis.get("yearly_total", 0)])
+            writer.writerow([])
+            writer.writerow(["LIST OF RECURRING EXPENSES"])
+            writer.writerow(["Expense Name", "Amount (PLN)", "Frequency", "Due Day", "Due Month", "Category", "Variable Bill", "Status"])
+
+        freq_map_pl = {
+            "monthly": "Miesięczny",
+            "biweekly": "Co 2 tyg",
+            "quarterly": "Kwartalny",
+            "semi_annual": "Półroczny",
+            "yearly": "Roczny",
+        }
+        freq_map_en = {
+            "monthly": "Monthly",
+            "biweekly": "Biweekly",
+            "quarterly": "Quarterly",
+            "semi_annual": "Semi-annual",
+            "yearly": "Yearly",
+        }
+        freq_map = freq_map_pl if lang == "pl" else freq_map_en
+
+        status_map_pl = {
+            "paid": "OPŁACONE",
+            "overdue": "ZALEGŁE",
+            "due_soon": "WKRÓTCE",
+            "upcoming": "NADCHODZĄCE",
+            "inactive": "NIEAKTYWNE"
+        }
+        status_map_en = {
+            "paid": "PAID",
+            "overdue": "OVERDUE",
+            "due_soon": "DUE SOON",
+            "upcoming": "UPCOMING",
+            "inactive": "INACTIVE"
+        }
+        status_map = status_map_pl if lang == "pl" else status_map_en
 
         for exp in expenses:
+            freq_str = freq_map.get(exp.get("frequency"), exp.get("frequency"))
+            status_key = exp.get("status", "upcoming")
+            status_str = status_map.get(status_key, status_key.upper())
+            
+            cat_name = exp.get("category", "")
+            if lang == "en":
+                cat_name = category_map_en.get(cat_name, cat_name)
+                
+            var_str = ("TAK" if exp.get("is_variable") else "NIE") if lang == "pl" else ("YES" if exp.get("is_variable") else "NO")
+
             writer.writerow([
                 exp.get("name"),
                 exp.get("amount"),
-                exp.get("frequency"),
+                freq_str,
                 exp.get("due_day"),
                 exp.get("due_month") or "-",
-                exp.get("category"),
-                "TAK" if exp.get("is_variable") else "NIE",
-                exp.get("status"),
+                cat_name,
+                var_str,
+                status_str,
             ])
 
         writer.writerow([])
-        writer.writerow(["HISTORIA WPAŁT I RACHUNKÓW"])
-        writer.writerow(["Nazwa wydatku", "Kategoria", "Okres", "Zapłacono (zł)", "Data wpłaty", "Opłacił(a)"])
+        if lang == "pl":
+            writer.writerow(["HISTORIA WPŁAT I RACHUNKÓW"])
+            writer.writerow(["Nazwa wydatku", "Kategoria", "Okres", "Zapłacono (zł)", "Data wpłaty", "Opłacił(a)"])
+        else:
+            writer.writerow(["PAYMENT AND BILL LOGS"])
+            writer.writerow(["Expense Name", "Category", "Period", "Amount Paid (PLN)", "Payment Date", "Paid By"])
 
         for p in payments:
+            cat_name = p.get("category", "-")
+            if lang == "en":
+                cat_name = category_map_en.get(cat_name, cat_name)
+                
+            period_str = p.get("period", "-")
+            if "-" in period_str and len(period_str) == 7:
+                try:
+                    y, m = period_str.split("-")
+                    period_str = f"{month_names[int(m)-1]} {y}"
+                except:
+                    pass
+
             writer.writerow([
                 p.get("expense_name"),
-                p.get("category"),
-                p.get("period"),
+                cat_name,
+                period_str,
                 p.get("amount_paid"),
                 p.get("date_paid"),
                 p.get("paid_by"),
@@ -642,7 +730,7 @@ def api_export_csv_report(current_user: UserProfile = Depends(get_current_user))
 
 
 @app.get("/api/reports/pdf")
-def api_export_pdf_report(current_user: UserProfile = Depends(get_current_user)):
+def api_export_pdf_report(lang: str = "pl", current_user: UserProfile = Depends(get_current_user)):
     """Generowanie i pobieranie raportu budżetowego w formacie PDF."""
     try:
         dashboard_data = api_get_expenses(current_user)
@@ -655,6 +743,7 @@ def api_export_pdf_report(current_user: UserProfile = Depends(get_current_user))
             expenses=expenses,
             payments=payments,
             user_name=current_user.name,
+            lang=lang,
         )
 
         return Response(

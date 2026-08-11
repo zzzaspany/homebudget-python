@@ -12,6 +12,7 @@ self.addEventListener('install', (e) => {
       return cache.addAll(ASSETS);
     })
   );
+  self.skipWaiting();
 });
 
 self.addEventListener('activate', (e) => {
@@ -20,19 +21,33 @@ self.addEventListener('activate', (e) => {
       return Promise.all(
         keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
       );
-    })
+    }).then(() => self.clients.claim())
   );
 });
 
 self.addEventListener('fetch', (e) => {
-  // Network first fallback to cache strategy for API calls
-  if (e.request.url.includes('/api/')) {
-    e.respondWith(
-      fetch(e.request).catch(() => caches.match(e.request))
-    );
-  } else {
-    e.respondWith(
-      caches.match(e.request).then((res) => res || fetch(e.request))
-    );
+  // We do not cache report downloads or POST/PUT/DELETE requests
+  if (e.request.method !== 'GET' || e.request.url.includes('/api/reports/')) {
+    e.respondWith(fetch(e.request));
+    return;
   }
+
+  // Network-First with Cache Fallback strategy
+  e.respondWith(
+    fetch(e.request)
+      .then((response) => {
+        // If valid response, clone and update cache
+        if (response.status === 200) {
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(e.request, responseClone);
+          });
+        }
+        return response;
+      })
+      .catch(() => {
+        // Fallback to cache if network is unavailable
+        return caches.match(e.request);
+      })
+  );
 });

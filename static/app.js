@@ -501,6 +501,12 @@ function updateUILanguage() {
             btnPl.style.color = 'var(--text-secondary)';
         }
     }
+
+    // 4. Update PDF & CSV report links with lang query parameter
+    const pdfLink = document.querySelector('a[href^="/api/reports/pdf"]');
+    const csvLink = document.querySelector('a[href^="/api/reports/csv"]');
+    if (pdfLink) pdfLink.href = `/api/reports/pdf?lang=${activeLang}`;
+    if (csvLink) csvLink.href = `/api/reports/csv?lang=${activeLang}`;
 }
 
 // Theme Switcher Logic
