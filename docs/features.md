@@ -2,14 +2,22 @@
 
 HomeBudget offers a clean, secure, and highly interactive dashboard that allows you to manage recurring household expenses, track spending against budget targets, and generate detailed reports.
 
+Below is an overview of the key features of the application, illustrated with interface screenshots.
+
 ---
 
 ## 1. Slate Themes (Dark & Light) 🌗
 
 The interface defaults to a modern, low-fatigue **Slate Dark** theme designed to harmonize with Home Assistant dashboards. However, you can instantly toggle to a high-contrast **Slate Light** theme for daylight environments.
 
+### Slate Dark Theme (English Locale)
+![HomeBudget Slate Dark Theme Dashboard](images/homebudget_dashboard_dark.png)
+
 *   **Dynamic Theme Switcher:** Located in the top header. Toggles the UI state and persists the preference in the browser's `localStorage`.
 *   **Adaptive Charts:** Chart.js components (doughnut charts, line plots, grids, and legend text colors) dynamically reload and update their style parameters on the fly to remain highly readable under both themes.
+
+### Slate Light Theme (Polish Locale)
+![HomeBudget Slate Light Theme Dashboard](images/homebudget_dashboard_light.png)
 
 ---
 
@@ -27,15 +35,19 @@ HomeBudget includes a complete translation layer that adapts both client-side el
 
 To keep spending under control, the dashboard displays active categories side-by-side with budget limits.
 
+![Category Budgets spent indicators and limits](images/homebudget_budget_bars.png)
+
 *   **Spent Indicators:** Displays a list of spending categories (e.g., *Utilities, Taxes, Reserves*) with progress bars showing actual monthly costs.
 *   **Custom Thresholds:** Click the **pencil icon** next to any category to set or edit the monthly budget threshold. Limits are saved locally in the browser.
-*   **Status Alert Colors:** Bars are highlighted in **emerald green** when under budget, and switch to an **animated pulsing red** if the monthly spending exceeds the defined limit.
+*   **Status Alert Colors:** Bars are highlighted in **emerald green** when under budget, and switch to an **animated pulsing red** if the monthly spending exceeds the defined limit (e.g., *Loans & Insurance* in the screenshot).
 
 ---
 
 ## 4. Visual Financial Analytics 📉
 
 The dashboard renders real-time financial charts based on active expense records:
+
+![Savings Plan & Category Breakdown Chart](images/homebudget_sinking_funds.png)
 
 *   **Category Breakdown (Doughnut Chart):** Illustrates the proportional allocation of resources across categories.
 *   **Cumulative Projection Timeline (Line Chart):** Maps out commitments month-by-month over the next year to identify peak cost months (e.g., when annual insurance or tax bills are due).
