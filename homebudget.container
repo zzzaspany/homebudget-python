@@ -1,0 +1,30 @@
+[Unit]
+Description=HomeBudget FastAPI Application (Rootless Quadlet)
+After=network-online.target
+
+[Container]
+# Name of the container
+ContainerName=homebudget
+
+# Pull the built container from GitHub Container Registry
+Image=ghcr.io/zzzaspany/homebudget-python:v0.1
+
+AutoUpdate=registry
+
+
+# Bind to port 8000 on the host
+PublishPort=8000:8000
+
+# Mount and load environment variables from the .env file
+# %h expands to the user's home directory automatically in systemd
+EnvironmentFile=%h/.config/containers/systemd/homebudget.env
+
+[Service]
+# Restart policy for the container
+Restart=always
+# Restart delay
+RestartSec=5
+
+[Install]
+# Target for rootless user systemd services
+WantedBy=default.target

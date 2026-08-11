@@ -1,0 +1,17 @@
+{
+  "short_name": "HomeBudget",
+  "name": "homebudget - Koszty Utrzymania Domu",
+  "description": "Aplikacja do kontroli i planowania cyklicznych opłat domowych.",
+  "start_url": "/",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "display": "standalone",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/house-chimney-window.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512"
+    }
+  ]
+}

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HomeBudget - Documentation</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="description" content="FastAPI Home Budget Application Documentation" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0" />
+  
+  <!-- Premium Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  
+  <!-- Base Theme Stylesheet -->
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css" />
+  
+  <!-- Curated HSL Custom Design Overlay -->
+  <style>
+    :root {
+      /* Curated HSL Palette */
+      --theme-color: hsl(224, 76%, 48%);
+      --theme-hover: hsl(224, 76%, 58%);
+      --accent-color: hsl(222, 47%, 11%);
+      --bg-color: hsl(210, 20%, 98%);
+      --text-color: hsl(215, 25%, 27%);
+      --sidebar-bg: hsl(0, 0%, 100%);
+      --border-color: hsl(210, 14%, 90%);
+      --code-bg: hsl(222, 47%, 11%);
+      
+      --base-font: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --code-font: 'Fira Code', 'Roboto Mono', monospace;
+    }
+    
+    body {
+      font-family: var(--base-font);
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    .sidebar {
+      background-color: var(--sidebar-bg);
+      border-right: 1px solid var(--border-color);
+    }
+    
+    .sidebar-nav li a {
+      color: hsl(215, 16%, 47%);
+      font-size: 15px;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 8px;
+      padding: 8px 14px;
+      margin: 4px 12px;
+      display: block;
+    }
+    
+    .sidebar-nav li a:hover {
+      color: var(--theme-hover);
+      background-color: hsl(224, 100%, 97%);
+      padding-left: 20px;
+    }
+    
+    .sidebar-nav li.active > a {
+      color: var(--theme-color);
+      background-color: hsl(224, 100%, 95%);
+      font-weight: 600;
+    }
+    
+    .markdown-section {
+      max-width: 850px;
+      padding: 30px 45px 40px;
+    }
+    
+    .markdown-section h1 {
+      font-weight: 700;
+      color: var(--accent-color);
+      letter-spacing: -0.75px;
+      font-size: 2.25rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .markdown-section h2 {
+      font-weight: 600;
+      color: var(--accent-color);
+      border-bottom: none;
+      letter-spacing: -0.5px;
+      font-size: 1.6rem;
+      margin-top: 2rem;
+    }
+    
+    .markdown-section h3 {
+      font-weight: 600;
+      color: var(--accent-color);
+      font-size: 1.25rem;
+    }
+    
+    .markdown-section p, .markdown-section li {
+      line-height: 1.65;
+      font-size: 16px;
+    }
+    
+    .markdown-section pre {
+      background-color: var(--code-bg);
+      border-radius: 10px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+      border: 1px solid var(--border-color);
+      padding: 18px;
+    }
+    
+    .markdown-section code {
+      font-family: var(--code-font);
+      background-color: hsl(220, 14%, 93%);
+      color: hsl(224, 76%, 35%);
+      padding: 3px 6px;
+      border-radius: 5px;
+      font-size: 0.9em;
+    }
+    
+    .markdown-section pre code {
+      background-color: transparent;
+      color: hsl(210, 20%, 95%);
+      padding: 0;
+      font-size: 0.9em;
+    }
+    
+    .app-sub-sidebar {
+      padding-left: 20px !important;
+    }
+    
+    .app-sub-sidebar li a {
+      font-size: 13.5px !important;
+      padding: 4px 10px !important;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">Loading HomeBudget Documentation...</div>
+  <script>
+    window.$docsify = {
+      name: 'HomeBudget 💰',
+      repo: 'https://github.com/zzzaspany/homebudget-python',
+      loadSidebar: true,
+      subMaxLevel: 2,
+      auto2top: true,
+      search: {
+        maxAge: 86400000,
+        paths: 'auto',
+        placeholder: 'Search documentation...',
+        noData: 'No results found!',
+        depth: 6
+      }
+    }
+  </script>
+  <!-- Docsify Engine -->
+  <script src="//cdn.jsdelivr.net/npm/docsify@4"></script>
+  
+  <!-- Plugins -->
+  <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/search.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-python.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-yaml.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-diff.min.js"></script>
+</body>
+</html>

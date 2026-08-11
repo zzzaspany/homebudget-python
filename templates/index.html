@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>homebudget - Koszty Utrzymania Domu</title>
+    <!-- PWA Manifest & Meta -->
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    <!-- Google Fonts Outfit & Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Local Stylesheet -->
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="glass-bg-glow"></div>
+    <div class="app-container">
+        <!-- Top Navigation -->
+        <header class="app-header">
+            <div class="header-logo">
+                <i class="fa-solid fa-house-chimney-window logo-icon"></i>
+                <div class="logo-text">
+                    <h1>home<span>budget</span></h1>
+                    <p class="tagline">Rozpiski kosztów utrzymania domu</p>
+                </div>
+            </div>
+            
+            <div class="header-user" style="display: flex; gap: 16px; align-items: center;">
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <a href="/api/reports/pdf" class="btn btn-secondary" style="text-decoration: none; font-size: 0.85rem; padding: 6px 12px;" target="_blank">
+                        <i class="fa-solid fa-file-pdf" style="color: #ef4444;"></i> Raport PDF
+                    </a>
+                    <a href="/api/reports/csv" class="btn btn-secondary" style="text-decoration: none; font-size: 0.85rem; padding: 6px 12px;">
+                        <i class="fa-solid fa-file-csv" style="color: #10b981;"></i> Raport CSV
+                    </a>
+                </div>
+                <div class="user-info">
+                    <span class="user-name">{{ user.name }}</span>
+                    <span class="user-email">{{ user.email }}</span>
+                </div>
+                <div class="user-avatar" id="userAvatar">
+                    {{ user.name[0] | upper if user.name else 'U' }}
+                </div>
+                {% if dev_mode %}
+                <span class="badge badge-dev">Tryb Deweloperski</span>
+                {% endif %}
+            </div>
+        </header>
+
+        <!-- KPI Summary Cards -->
+        <section class="kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+            <div class="kpi-card main-kpi">
+                <div class="kpi-icon"><i class="fa-solid fa-calculator"></i></div>
+                <div class="kpi-content">
+                    <h3>Średniomiesięczny Budżet</h3>
+                    <div class="kpi-value" id="kpiProrated">0,00 zł</div>
+                    <p class="kpi-subtitle">Miesięczne + proporcjonalne rzadkie</p>
+                </div>
+            </div>
+            <div class="kpi-card" style="background: rgba(139, 92, 246, 0.08); border-color: rgba(139, 92, 246, 0.2);">
+                <div class="kpi-icon" style="background: rgba(139, 92, 246, 0.2); color: #8b5cf6;"><i class="fa-solid fa-piggy-bank"></i></div>
+                <div class="kpi-content">
+                    <h3>Rezerwa Oszczędnościowa</h3>
+                    <div class="kpi-value" id="kpiSinkingFund" style="color: #8b5cf6;">0,00 zł</div>
+                    <p class="kpi-subtitle">Miesięcznie na opłaty rzadkie</p>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon"><i class="fa-solid fa-calendar-days"></i></div>
+                <div class="kpi-content">
+                    <h3>Zobowiązania Miesięczne</h3>
+                    <div class="kpi-value" id="kpiMonthly">0,00 zł</div>
+                    <p class="kpi-subtitle">Bezpośrednie koszty miesięczne</p>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon"><i class="fa-solid fa-receipt"></i></div>
+                <div class="kpi-content">
+                    <h3>Zobowiązania Roczne</h3>
+                    <div class="kpi-value" id="kpiYearly">0,00 zł</div>
+                    <p class="kpi-subtitle">Suma rocznych kosztów stałych</p>
+                </div>
+            </div>
+            <div class="kpi-card status-kpi" id="kpiStatusCard">
+                <div class="kpi-icon"><i class="fa-solid fa-bell"></i></div>
+                <div class="kpi-content">
+                    <h3>Wymagane Płatności</h3>
+                    <div class="kpi-value" id="kpiPending">0</div>
+                    <p class="kpi-subtitle" id="kpiPendingDetail">0 Zaległych | 0 Zbliżających się</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- View Switcher Tabs -->
+        <div style="display: flex; gap: 12px; margin-top: 1.5rem; margin-bottom: 1rem;">
+            <button class="btn btn-primary" id="tabListView" onclick="switchDashboardView('list')"><i class="fa-solid fa-list-check"></i> Lista i Wykresy</button>
+            <button class="btn btn-secondary" id="tabCalendarView" onclick="switchDashboardView('calendar')"><i class="fa-solid fa-calendar-days"></i> Widok Kalendarza</button>
+        </div>
+
+        <!-- Calendar View Container -->
+        <div id="calendarViewContainer" class="dashboard-card" style="display: none; width: 100%; margin-bottom: 2rem;">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <h2><i class="fa-solid fa-calendar-days"></i> Kalendarz Terminów Płatności</h2>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <button class="btn btn-sm btn-secondary" id="calPrevMonth"><i class="fa-solid fa-chevron-left"></i> Poprzedni</button>
+                    <span id="calMonthTitle" style="font-weight: 700; font-size: 1.1rem; min-width: 140px; text-align: center; color: var(--text-primary);">-</span>
+                    <button class="btn btn-sm btn-secondary" id="calNextMonth">Następny <i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; font-weight: 600; text-align: center; color: var(--text-secondary); margin-top: 1rem; margin-bottom: 8px; font-size: 0.85rem;">
+                <div>Pon</div><div>Wt</div><div>Śr</div><div>Czw</div><div>Pt</div><div>Sob</div><div>Niedz</div>
+            </div>
+            <div id="calendarGrid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px;">
+                <!-- Calendar grid cells rendered dynamically -->
+            </div>
+        </div>
+
+        <!-- Main Dashboard Split Layout -->
+        <main class="dashboard-layout" id="mainDashboardLayout">
+            <!-- Left Side: Notifications & Charts -->
+            <div class="dashboard-left">
+                <!-- Notifications Pane -->
+                <div class="dashboard-card notifications-pane">
+                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2><i class="fa-solid fa-triangle-exclamation"></i> Alerty Płatności</h2>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <button class="btn btn-secondary" id="btnSendEmailAlerts" style="padding: 4px 10px; font-size: 0.82rem; height: 32px;" title="Wyślij powiadomienie e-mail SMTP">
+                                <i class="fa-solid fa-envelope"></i> Wyślij e-mail
+                            </button>
+                            <span class="badge" id="alertsCountBadge">0 alertów</span>
+                        </div>
+                    </div>
+                    <div class="alerts-list" id="alertsList">
+                        <div class="empty-alerts">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <p>Wszystko opłacone! Brak zaległych płatności.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sinking Funds Reserves Breakdown -->
+                <div class="dashboard-card sinking-funds-pane">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-piggy-bank"></i> Planowanie Rezerw (Sinking Funds)</h2>
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">Odkładaj co miesiąc na poniższe opłaty rzadkie, aby uniknąć obciążenia budżetu w miesiącu płatności:</p>
+                    <div id="sinkingFundsList" style="display: flex; flex-direction: column; gap: 8px;">
+                        <!-- Dynamic items -->
+                    </div>
+                </div>
+
+                <!-- Graphs Container -->
+                <div class="dashboard-card charts-pane">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-chart-pie"></i> Udział Kategorii (Miesięczny Uśredniony)</h2>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="categoryDoughnutChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="dashboard-card charts-pane">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-chart-column"></i> Prognoza Wydatków (Kolejne 12 Miesięcy)</h2>
+                    </div>
+                    <div class="chart-wrapper bar-chart-wrapper">
+                        <canvas id="projectionBarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Full Expenses List -->
+            <div class="dashboard-right">
+                <div class="dashboard-card expenses-pane">
+                    <div class="card-header expenses-header-actions">
+                        <h2><i class="fa-solid fa-list-check"></i> Wydatki Cykliczne i Stałe</h2>
+                        <button class="btn btn-primary" id="btnAddExpense">
+                            <i class="fa-solid fa-plus"></i> Dodaj Wydatek
+                        </button>
+                    </div>
+
+                    <div class="filter-bar">
+                        <div class="search-input-wrapper">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="expenseSearch" placeholder="Szukaj wydatków...">
+                        </div>
+                        <div class="filter-selects">
+                            <select id="filterFrequency">
+                                <option value="all">Wszystkie cykle</option>
+                                <option value="monthly">Miesięczne</option>
+                                <option value="biweekly">Co 2 tygodnie</option>
+                                <option value="quarterly">Kwartalne</option>
+                                <option value="semi_annual">Półroczne</option>
+                                <option value="yearly">Roczne</option>
+                            </select>
+                            <select id="filterStatus">
+                                <option value="all">Wszystkie statusy</option>
+                                <option value="overdue">Zaległe</option>
+                                <option value="due_soon">Zbliżające się</option>
+                                <option value="paid">Opłacone</option>
+                                <option value="upcoming">Nadchodzące</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="expenses-table" id="expensesTable">
+                            <thead>
+                                <tr>
+                                    <th>Nazwa wydatku</th>
+                                    <th>Kwota</th>
+                                    <th>Cykl</th>
+                                    <th>Termin</th>
+                                    <th>Kategoria</th>
+                                    <th>Status</th>
+                                    <th>Akcje</th>
+                                </tr>
+                            </thead>
+                            <tbody id="expensesTableBody">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Transaction History Panel -->
+        <div class="dashboard-card history-pane" style="margin-top: 2rem; width: 100%;">
+            <div class="card-header">
+                <h2><i class="fa-solid fa-clock-rotate-left"></i> Historia Płatności</h2>
+            </div>
+            <div class="table-container" style="max-height: 400px; overflow-y: auto;">
+                <table class="expenses-table" id="paymentsTable">
+                    <thead>
+                        <tr>
+                            <th>Nazwa wydatku</th>
+                            <th>Kategoria</th>
+                            <th>Okres opłacony</th>
+                            <th>Kwota</th>
+                            <th>Data wpłaty</th>
+                            <th>Opłacił(a)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="paymentsTableBody">
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                                <i class="fa-solid fa-receipt" style="font-size: 2rem; margin-bottom: 0.5rem; display: block; opacity: 0.5;"></i>
+                                Brak historii płatności.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div class="modal" id="expenseModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Dodaj Wydatek Cykliczny</h2>
+                <button class="btn-close" id="btnCancelModal">&times;</button>
+            </div>
+            <form id="expenseForm">
+                <input type="hidden" id="expenseId">
+                <div class="form-group">
+                    <label for="expName">Nazwa wydatku</label>
+                    <input type="text" id="expName" required placeholder="np. Rachunek za Prąd, Ubezpieczenie Domu">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="expAmount">Kwota (zł)</label>
+                        <input type="number" id="expAmount" step="0.01" required min="0.01" placeholder="np. 120.00">
+                    </div>
+                    <div class="form-group">
+                        <label for="expCategory">Kategoria</label>
+                        <input type="text" id="expCategory" required placeholder="np. Media, Przeglądy, Podatki" list="categorySuggestions">
+                        <datalist id="categorySuggestions">
+                            <option value="Kredyt i Ubezpieczenia">
+                            <option value="Media i Eksploatacja">
+                            <option value="Stałe Opłaty">
+                            <option value="Serwisy i Przeglądy">
+                            <option value="Podatki i Ubezpieczenia">
+                            <option value="Bufor i Rezerwy">
+                        </datalist>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="expFrequency">Częstotliwość</label>
+                        <select id="expFrequency" required>
+                            <option value="monthly">Miesięczny</option>
+                            <option value="biweekly">Co 2 tygodnie</option>
+                            <option value="quarterly">Kwartalny (co 3 miesiące)</option>
+                            <option value="semi_annual">Półroczny (co 6 miesięcy)</option>
+                            <option value="yearly">Roczny</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="expDueDay">Dzień płatności (1-31)</label>
+                        <input type="number" id="expDueDay" required min="1" max="31" placeholder="np. 10">
+                    </div>
+                </div>
+
+                <div class="form-group" id="dueMonthGroup" style="display: none;">
+                    <label for="expDueMonth">Miesiąc płatności (lub miesiąc pierwszej opłaty w roku)</label>
+                    <select id="expDueMonth">
+                        <option value="1">Styczeń</option>
+                        <option value="2">Luty</option>
+                        <option value="3">Marzec</option>
+                        <option value="4">Kwiecień</option>
+                        <option value="5">Maj</option>
+                        <option value="6">Czerwiec</option>
+                        <option value="7">Lipiec</option>
+                        <option value="8">Sierpień</option>
+                        <option value="9">Wrzesień</option>
+                        <option value="10">Październik</option>
+                        <option value="11">Listopad</option>
+                        <option value="12">Grudzień</option>
+                    </select>
+                </div>
+
+                <div class="form-group form-checkbox">
+                    <input type="checkbox" id="expVariable">
+                    <label for="expVariable">Rachunek zmienny (np. prąd/gaz według zużycia)</label>
+                </div>
+
+                <div class="form-group form-checkbox">
+                    <input type="checkbox" id="expActive" checked>
+                    <label for="expActive">Aktywny (uwzględniaj w podsumowaniach i obliczeniach)</label>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="btnCancelModalForm">Anuluj</button>
+                    <button type="submit" class="btn btn-primary" id="btnSaveExpense">Zapisz wydatek</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Payment Confirmation Modal -->
+    <div class="modal" id="payConfirmModal">
+        <div class="modal-content" style="max-width: 440px;">
+            <div class="modal-header">
+                <h2>Rejestracja Płatności</h2>
+                <button class="btn-close" id="btnCancelPayModal">&times;</button>
+            </div>
+            <form id="payConfirmForm" enctype="multipart/form-data">
+                <input type="hidden" id="payConfirmExpenseId">
+                <div class="payment-details-summary" style="margin-bottom: 1.2rem; background: rgba(255, 255, 255, 0.03); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05);">
+                    <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 4px;">Wydatek:</div>
+                    <div id="payConfirmName" style="font-weight: 700; font-size: 1.1rem; color: var(--text-primary); margin-bottom: 12px;">-</div>
+                    
+                    <div style="display: flex; justify-content: space-between;">
+                        <div>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 2px;">Okres:</div>
+                            <div id="payConfirmPeriod" style="font-weight: 600; font-size: 0.95rem; color: var(--text-primary);">-</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 2px;">Domyślna kwota:</div>
+                            <div id="payConfirmDefaultAmount" style="font-weight: 600; font-size: 0.95rem; color: var(--text-primary);">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="payActualAmount">Faktycznie zapłacona kwota (zł)</label>
+                    <input type="number" id="payActualAmount" name="amount_paid" step="0.01" required min="0.01" placeholder="np. 120.00" style="font-size: 1.2rem; font-weight: 700; padding: 10px 14px; text-align: center; color: #10B981; border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.04);">
+                    <div id="variableHint" style="display: none; font-size: 0.8rem; color: #8b5cf6; margin-top: 4px; text-align: center;">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Sugerowana kwota z historii: <span id="variableHintVal">0,00 zł</span>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label for="payInvoiceFile" style="font-size: 0.85rem; color: var(--text-secondary);"><i class="fa-solid fa-paperclip"></i> Załącznik (Faktura PDF / Zdjęcie paragonu)</label>
+                    <input type="file" id="payInvoiceFile" name="invoice_file" accept="application/pdf,image/*" style="font-size: 0.85rem; padding: 6px; border: 1px dashed rgba(255,255,255,0.15); border-radius: 6px;">
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="btnCancelPayModalForm">Anuluj</button>
+                    <button type="submit" class="btn btn-primary" id="btnConfirmPayment" style="background: linear-gradient(135deg, #059669, #10B981); border: none;">Potwierdź opłatę</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Price History Modal -->
+    <div class="modal" id="priceHistoryModal">
+        <div class="modal-content" style="max-width: 540px;">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-chart-line"></i> Historia Ceny i Inflacja</h2>
+                <button class="btn-close" id="btnCancelHistoryModal">&times;</button>
+            </div>
+            <div style="padding: 1rem 0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 12px 16px; border-radius: 8px; margin-bottom: 1rem;">
+                    <div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">Wydatek</div>
+                        <div id="historyExpenseName" style="font-weight: 700; font-size: 1.1rem; color: var(--text-primary);">-</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">Zmiana ceny (Inflacja)</div>
+                        <div id="historyPriceChange" style="font-weight: 800; font-size: 1.2rem;">0.0%</div>
+                    </div>
+                </div>
+                <div class="table-container" style="max-height: 280px; overflow-y: auto;">
+                    <table class="expenses-table" style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>Data wpłaty</th>
+                                <th>Okres</th>
+                                <th>Zapłacona kwota</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                            <!-- Dynamic rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Local Script -->
+    <script src="/static/app.js"></script>
+</body>
+</html>
