@@ -24,17 +24,22 @@
                 <i class="fa-solid fa-house-chimney-window logo-icon"></i>
                 <div class="logo-text">
                     <h1>home<span>budget</span></h1>
-                    <p class="tagline">Rozpiski kosztów utrzymania domu</p>
+                    <p class="tagline" data-i18n="tagline">Rozpiski kosztów utrzymania domu</p>
                 </div>
             </div>
             
             <div class="header-user" style="display: flex; gap: 16px; align-items: center;">
+                <!-- Language Switcher -->
+                <div class="language-switcher" style="display: flex; gap: 4px; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 6px; padding: 2px; background: rgba(0,0,0,0.2);">
+                    <button class="btn btn-sm" id="langBtnPl" onclick="changeLanguage('pl')" style="padding: 4px 8px; font-size: 0.75rem; font-weight: 600; border: none; border-radius: 4px; cursor: pointer; transition: all 0.2s; background: transparent; color: var(--text-secondary);">PL</button>
+                    <button class="btn btn-sm" id="langBtnEn" onclick="changeLanguage('en')" style="padding: 4px 8px; font-size: 0.75rem; font-weight: 600; border: none; border-radius: 4px; cursor: pointer; transition: all 0.2s; background: transparent; color: var(--text-secondary);">EN</button>
+                </div>
                 <div style="display: flex; gap: 8px; align-items: center;">
                     <a href="/api/reports/pdf" class="btn btn-secondary" style="text-decoration: none; font-size: 0.85rem; padding: 6px 12px;" target="_blank">
-                        <i class="fa-solid fa-file-pdf" style="color: #ef4444;"></i> Raport PDF
+                        <i class="fa-solid fa-file-pdf" style="color: #ef4444;"></i> <span data-i18n="report_pdf">Raport PDF</span>
                     </a>
                     <a href="/api/reports/csv" class="btn btn-secondary" style="text-decoration: none; font-size: 0.85rem; padding: 6px 12px;">
-                        <i class="fa-solid fa-file-csv" style="color: #10b981;"></i> Raport CSV
+                        <i class="fa-solid fa-file-csv" style="color: #10b981;"></i> <span data-i18n="report_csv">Raport CSV</span>
                     </a>
                 </div>
                 <div class="user-info">
@@ -45,7 +50,7 @@
                     {{ user.name[0] | upper if user.name else 'U' }}
                 </div>
                 {% if dev_mode %}
-                <span class="badge badge-dev">Tryb Deweloperski</span>
+                <span class="badge badge-dev" data-i18n="dev_mode">Tryb Deweloperski</span>
                 {% endif %}
             </div>
         </header>
@@ -55,39 +60,39 @@
             <div class="kpi-card main-kpi">
                 <div class="kpi-icon"><i class="fa-solid fa-calculator"></i></div>
                 <div class="kpi-content">
-                    <h3>Średniomiesięczny Budżet</h3>
+                    <h3 data-i18n="kpi_prorated_title">Średniomiesięczny Budżet</h3>
                     <div class="kpi-value" id="kpiProrated">0,00 zł</div>
-                    <p class="kpi-subtitle">Miesięczne + proporcjonalne rzadkie</p>
+                    <p class="kpi-subtitle" data-i18n="kpi_prorated_subtitle">Miesięczne + proporcjonalne rzadkie</p>
                 </div>
             </div>
             <div class="kpi-card" style="background: rgba(139, 92, 246, 0.08); border-color: rgba(139, 92, 246, 0.2);">
                 <div class="kpi-icon" style="background: rgba(139, 92, 246, 0.2); color: #8b5cf6;"><i class="fa-solid fa-piggy-bank"></i></div>
                 <div class="kpi-content">
-                    <h3>Rezerwa Oszczędnościowa</h3>
+                    <h3 data-i18n="kpi_sinking_fund_title">Rezerwa Oszczędnościowa</h3>
                     <div class="kpi-value" id="kpiSinkingFund" style="color: #8b5cf6;">0,00 zł</div>
-                    <p class="kpi-subtitle">Miesięcznie na opłaty rzadkie</p>
+                    <p class="kpi-subtitle" data-i18n="kpi_sinking_fund_subtitle">Miesięcznie na opłaty rzadkie</p>
                 </div>
             </div>
             <div class="kpi-card">
                 <div class="kpi-icon"><i class="fa-solid fa-calendar-days"></i></div>
                 <div class="kpi-content">
-                    <h3>Zobowiązania Miesięczne</h3>
+                    <h3 data-i18n="kpi_monthly_title">Zobowiązania Miesięczne</h3>
                     <div class="kpi-value" id="kpiMonthly">0,00 zł</div>
-                    <p class="kpi-subtitle">Bezpośrednie koszty miesięczne</p>
+                    <p class="kpi-subtitle" data-i18n="kpi_monthly_subtitle">Bezpośrednie koszty miesięczne</p>
                 </div>
             </div>
             <div class="kpi-card">
                 <div class="kpi-icon"><i class="fa-solid fa-receipt"></i></div>
                 <div class="kpi-content">
-                    <h3>Zobowiązania Roczne</h3>
+                    <h3 data-i18n="kpi_yearly_title">Zobowiązania Roczne</h3>
                     <div class="kpi-value" id="kpiYearly">0,00 zł</div>
-                    <p class="kpi-subtitle">Suma rocznych kosztów stałych</p>
+                    <p class="kpi-subtitle" data-i18n="kpi_yearly_subtitle">Suma rocznych kosztów stałych</p>
                 </div>
             </div>
             <div class="kpi-card status-kpi" id="kpiStatusCard">
                 <div class="kpi-icon"><i class="fa-solid fa-bell"></i></div>
                 <div class="kpi-content">
-                    <h3>Wymagane Płatności</h3>
+                    <h3 data-i18n="kpi_pending_title">Wymagane Płatności</h3>
                     <div class="kpi-value" id="kpiPending">0</div>
                     <p class="kpi-subtitle" id="kpiPendingDetail">0 Zaległych | 0 Zbliżających się</p>
                 </div>
@@ -96,22 +101,22 @@
 
         <!-- View Switcher Tabs -->
         <div style="display: flex; gap: 12px; margin-top: 1.5rem; margin-bottom: 1rem;">
-            <button class="btn btn-primary" id="tabListView" onclick="switchDashboardView('list')"><i class="fa-solid fa-list-check"></i> Lista i Wykresy</button>
-            <button class="btn btn-secondary" id="tabCalendarView" onclick="switchDashboardView('calendar')"><i class="fa-solid fa-calendar-days"></i> Widok Kalendarza</button>
+            <button class="btn btn-primary" id="tabListView" onclick="switchDashboardView('list')"><i class="fa-solid fa-list-check"></i> <span data-i18n="tab_list">Lista i Wykresy</span></button>
+            <button class="btn btn-secondary" id="tabCalendarView" onclick="switchDashboardView('calendar')"><i class="fa-solid fa-calendar-days"></i> <span data-i18n="tab_calendar">Widok Kalendarza</span></button>
         </div>
 
         <!-- Calendar View Container -->
         <div id="calendarViewContainer" class="dashboard-card" style="display: none; width: 100%; margin-bottom: 2rem;">
             <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                <h2><i class="fa-solid fa-calendar-days"></i> Kalendarz Terminów Płatności</h2>
+                <h2><i class="fa-solid fa-calendar-days"></i> <span data-i18n="cal_title">Kalendarz Terminów Płatności</span></h2>
                 <div style="display: flex; gap: 12px; align-items: center;">
-                    <button class="btn btn-sm btn-secondary" id="calPrevMonth"><i class="fa-solid fa-chevron-left"></i> Poprzedni</button>
+                    <button class="btn btn-sm btn-secondary" id="calPrevMonth"><i class="fa-solid fa-chevron-left"></i> <span data-i18n="cal_prev">Poprzedni</span></button>
                     <span id="calMonthTitle" style="font-weight: 700; font-size: 1.1rem; min-width: 140px; text-align: center; color: var(--text-primary);">-</span>
-                    <button class="btn btn-sm btn-secondary" id="calNextMonth">Następny <i class="fa-solid fa-chevron-right"></i></button>
+                    <button class="btn btn-sm btn-secondary" id="calNextMonth"><span data-i18n="cal_next">Następny</span> <i class="fa-solid fa-chevron-right"></i></button>
                 </div>
             </div>
-            <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; font-weight: 600; text-align: center; color: var(--text-secondary); margin-top: 1rem; margin-bottom: 8px; font-size: 0.85rem;">
-                <div>Pon</div><div>Wt</div><div>Śr</div><div>Czw</div><div>Pt</div><div>Sob</div><div>Niedz</div>
+            <div id="calendarWeekdaysHeader" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; font-weight: 600; text-align: center; color: var(--text-secondary); margin-top: 1rem; margin-bottom: 8px; font-size: 0.85rem;">
+                <!-- Weekdays populated dynamically by JS -->
             </div>
             <div id="calendarGrid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px;">
                 <!-- Calendar grid cells rendered dynamically -->
@@ -125,16 +130,16 @@
                 <!-- Notifications Pane -->
                 <div class="dashboard-card notifications-pane">
                     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                        <h2><i class="fa-solid fa-triangle-exclamation"></i> Alerty Płatności</h2>
+                        <h2><i class="fa-solid fa-triangle-exclamation"></i> <span data-i18n="alert_title">Alerty Płatności</span></h2>
                         <div style="display: flex; gap: 8px; align-items: center;">
                             <button class="btn btn-secondary" id="btnSendEmailAlerts" style="padding: 4px 10px; font-size: 0.82rem; height: 32px;" title="Wyślij powiadomienie e-mail SMTP">
-                                <i class="fa-solid fa-envelope"></i> Wyślij e-mail
+                                <i class="fa-solid fa-envelope"></i> <span data-i18n="alert_send_email">Wyślij e-mail</span>
                             </button>
                             <span class="badge" id="alertsCountBadge">0 alertów</span>
                         </div>
                     </div>
                     <div class="alerts-list" id="alertsList">
-                        <div class="empty-alerts">
+                        <div class="empty-alerts" data-i18n="alert_empty">
                             <i class="fa-solid fa-circle-check"></i>
                             <p>Wszystko opłacone! Brak zaległych płatności.</p>
                         </div>
@@ -144,9 +149,9 @@
                 <!-- Sinking Funds Reserves Breakdown -->
                 <div class="dashboard-card sinking-funds-pane">
                     <div class="card-header">
-                        <h2><i class="fa-solid fa-piggy-bank"></i> Planowanie Rezerw (Sinking Funds)</h2>
+                        <h2><i class="fa-solid fa-piggy-bank"></i> <span data-i18n="sinking_funds_title">Planowanie Rezerw (Sinking Funds)</span></h2>
                     </div>
-                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">Odkładaj co miesiąc na poniższe opłaty rzadkie, aby uniknąć obciążenia budżetu w miesiącu płatności:</p>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;" data-i18n="sinking_funds_subtitle">Odkładaj co miesiąc na poniższe opłaty rzadkie, aby uniknąć obciążenia budżetu w miesiącu płatności:</p>
                     <div id="sinkingFundsList" style="display: flex; flex-direction: column; gap: 8px;">
                         <!-- Dynamic items -->
                     </div>
@@ -155,7 +160,7 @@
                 <!-- Graphs Container -->
                 <div class="dashboard-card charts-pane">
                     <div class="card-header">
-                        <h2><i class="fa-solid fa-chart-pie"></i> Udział Kategorii (Miesięczny Uśredniony)</h2>
+                        <h2><i class="fa-solid fa-chart-pie"></i> <span data-i18n="chart_category_title">Udział Kategorii (Miesięczny Uśredniony)</span></h2>
                     </div>
                     <div class="chart-wrapper">
                         <canvas id="categoryDoughnutChart"></canvas>
@@ -164,7 +169,7 @@
 
                 <div class="dashboard-card charts-pane">
                     <div class="card-header">
-                        <h2><i class="fa-solid fa-chart-column"></i> Prognoza Wydatków (Kolejne 12 Miesięcy)</h2>
+                        <h2><i class="fa-solid fa-chart-column"></i> <span data-i18n="chart_projection_title">Prognoza Wydatków (Kolejne 12 Miesięcy)</span></h2>
                     </div>
                     <div class="chart-wrapper bar-chart-wrapper">
                         <canvas id="projectionBarChart"></canvas>
@@ -176,32 +181,32 @@
             <div class="dashboard-right">
                 <div class="dashboard-card expenses-pane">
                     <div class="card-header expenses-header-actions">
-                        <h2><i class="fa-solid fa-list-check"></i> Wydatki Cykliczne i Stałe</h2>
+                        <h2><i class="fa-solid fa-list-check"></i> <span data-i18n="expenses_title">Wydatki Cykliczne i Stałe</span></h2>
                         <button class="btn btn-primary" id="btnAddExpense">
-                            <i class="fa-solid fa-plus"></i> Dodaj Wydatek
+                            <i class="fa-solid fa-plus"></i> <span data-i18n="btn_add_expense">Dodaj Wydatek</span>
                         </button>
                     </div>
 
                     <div class="filter-bar">
                         <div class="search-input-wrapper">
                             <i class="fa-solid fa-magnifying-glass"></i>
-                            <input type="text" id="expenseSearch" placeholder="Szukaj wydatków...">
+                            <input type="text" id="expenseSearch" placeholder="Szukaj wydatków..." data-i18n-placeholder="search_placeholder">
                         </div>
                         <div class="filter-selects">
                             <select id="filterFrequency">
-                                <option value="all">Wszystkie cykle</option>
-                                <option value="monthly">Miesięczne</option>
-                                <option value="biweekly">Co 2 tygodnie</option>
-                                <option value="quarterly">Kwartalne</option>
-                                <option value="semi_annual">Półroczne</option>
-                                <option value="yearly">Roczne</option>
+                                <option value="all" data-i18n="filter_all_frequencies">Wszystkie cykle</option>
+                                <option value="monthly" data-i18n="filter_monthly">Miesięczne</option>
+                                <option value="biweekly" data-i18n="filter_biweekly">Co 2 tygodnie</option>
+                                <option value="quarterly" data-i18n="filter_quarterly">Kwartalne</option>
+                                <option value="semi_annual" data-i18n="filter_semi_annual">Półroczne</option>
+                                <option value="yearly" data-i18n="filter_yearly">Roczne</option>
                             </select>
                             <select id="filterStatus">
-                                <option value="all">Wszystkie statusy</option>
-                                <option value="overdue">Zaległe</option>
-                                <option value="due_soon">Zbliżające się</option>
-                                <option value="paid">Opłacone</option>
-                                <option value="upcoming">Nadchodzące</option>
+                                <option value="all" data-i18n="filter_all_statuses">Wszystkie statusy</option>
+                                <option value="overdue" data-i18n="filter_status_overdue">Zaległe</option>
+                                <option value="due_soon" data-i18n="filter_status_due_soon">Zbliżające się</option>
+                                <option value="paid" data-i18n="filter_status_paid">Opłacone</option>
+                                <option value="upcoming" data-i18n="filter_status_upcoming">Nadchodzące</option>
                             </select>
                         </div>
                     </div>
@@ -210,13 +215,13 @@
                         <table class="expenses-table" id="expensesTable">
                             <thead>
                                 <tr>
-                                    <th>Nazwa wydatku</th>
-                                    <th>Kwota</th>
-                                    <th>Cykl</th>
-                                    <th>Termin</th>
-                                    <th>Kategoria</th>
-                                    <th>Status</th>
-                                    <th>Akcje</th>
+                                    <th data-i18n="th_name">Nazwa wydatku</th>
+                                    <th data-i18n="th_amount">Kwota</th>
+                                    <th data-i18n="th_frequency">Cykl</th>
+                                    <th data-i18n="th_due_date">Termin</th>
+                                    <th data-i18n="th_category">Kategoria</th>
+                                    <th data-i18n="th_status">Status</th>
+                                    <th data-i18n="th_actions">Akcje</th>
                                 </tr>
                             </thead>
                             <tbody id="expensesTableBody">
@@ -231,25 +236,25 @@
         <!-- Transaction History Panel -->
         <div class="dashboard-card history-pane" style="margin-top: 2rem; width: 100%;">
             <div class="card-header">
-                <h2><i class="fa-solid fa-clock-rotate-left"></i> Historia Płatności</h2>
+                <h2><i class="fa-solid fa-clock-rotate-left"></i> <span data-i18n="history_title">Historia Płatności</span></h2>
             </div>
             <div class="table-container" style="max-height: 400px; overflow-y: auto;">
                 <table class="expenses-table" id="paymentsTable">
                     <thead>
                         <tr>
-                            <th>Nazwa wydatku</th>
-                            <th>Kategoria</th>
-                            <th>Okres opłacony</th>
-                            <th>Kwota</th>
-                            <th>Data wpłaty</th>
-                            <th>Opłacił(a)</th>
+                            <th data-i18n="th_name">Nazwa wydatku</th>
+                            <th data-i18n="th_category">Kategoria</th>
+                            <th data-i18n="th_period">Okres opłacony</th>
+                            <th data-i18n="th_amount">Kwota</th>
+                            <th data-i18n="th_date_paid">Data wpłaty</th>
+                            <th data-i18n="th_paid_by">Opłacił(a)</th>
                         </tr>
                     </thead>
                     <tbody id="paymentsTableBody">
                         <tr>
                             <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
                                 <i class="fa-solid fa-receipt" style="font-size: 2rem; margin-bottom: 0.5rem; display: block; opacity: 0.5;"></i>
-                                Brak historii płatności.
+                                <span data-i18n="history_empty">Brak historii płatności.</span>
                             </td>
                         </tr>
                     </tbody>
@@ -262,24 +267,24 @@
     <div class="modal" id="expenseModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="modalTitle">Dodaj Wydatek Cykliczny</h2>
+                <h2 id="modalTitle" data-i18n="modal_add_title">Dodaj Wydatek Cykliczny</h2>
                 <button class="btn-close" id="btnCancelModal">&times;</button>
             </div>
             <form id="expenseForm">
                 <input type="hidden" id="expenseId">
                 <div class="form-group">
-                    <label for="expName">Nazwa wydatku</label>
-                    <input type="text" id="expName" required placeholder="np. Rachunek za Prąd, Ubezpieczenie Domu">
+                    <label for="expName" data-i18n="label_name">Nazwa wydatku</label>
+                    <input type="text" id="expName" required placeholder="np. Rachunek za Prąd, Ubezpieczenie Domu" data-i18n-placeholder="placeholder_name_eg">
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="expAmount">Kwota (zł)</label>
+                        <label for="expAmount" data-i18n="label_amount">Kwota (zł)</label>
                         <input type="number" id="expAmount" step="0.01" required min="0.01" placeholder="np. 120.00">
                     </div>
                     <div class="form-group">
-                        <label for="expCategory">Kategoria</label>
-                        <input type="text" id="expCategory" required placeholder="np. Media, Przeglądy, Podatki" list="categorySuggestions">
+                        <label for="expCategory" data-i18n="label_category">Kategoria</label>
+                        <input type="text" id="expCategory" required placeholder="np. Media, Przeglądy, Podatki" list="categorySuggestions" data-i18n-placeholder="placeholder_category_eg">
                         <datalist id="categorySuggestions">
                             <option value="Kredyt i Ubezpieczenia">
                             <option value="Media i Eksploatacja">
@@ -293,52 +298,52 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="expFrequency">Częstotliwość</label>
+                        <label for="expFrequency" data-i18n="label_frequency">Częstotliwość</label>
                         <select id="expFrequency" required>
-                            <option value="monthly">Miesięczny</option>
-                            <option value="biweekly">Co 2 tygodnie</option>
-                            <option value="quarterly">Kwartalny (co 3 miesiące)</option>
-                            <option value="semi_annual">Półroczny (co 6 miesięcy)</option>
-                            <option value="yearly">Roczny</option>
+                            <option value="monthly" data-i18n="freq_monthly">Miesięczny</option>
+                            <option value="biweekly" data-i18n="freq_biweekly">Co 2 tygodnie</option>
+                            <option value="quarterly" data-i18n="freq_quarterly">Kwartalny (co 3 miesiące)</option>
+                            <option value="semi_annual" data-i18n="freq_semi_annual">Półroczny (co 6 miesięcy)</option>
+                            <option value="yearly" data-i18n="freq_yearly">Roczny</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="expDueDay">Dzień płatności (1-31)</label>
+                        <label for="expDueDay" data-i18n="label_due_day">Dzień płatności (1-31)</label>
                         <input type="number" id="expDueDay" required min="1" max="31" placeholder="np. 10">
                     </div>
                 </div>
 
                 <div class="form-group" id="dueMonthGroup" style="display: none;">
-                    <label for="expDueMonth">Miesiąc płatności (lub miesiąc pierwszej opłaty w roku)</label>
+                    <label for="expDueMonth" data-i18n="label_due_month">Miesiąc płatności (lub miesiąc pierwszej opłaty w roku)</label>
                     <select id="expDueMonth">
-                        <option value="1">Styczeń</option>
-                        <option value="2">Luty</option>
-                        <option value="3">Marzec</option>
-                        <option value="4">Kwiecień</option>
-                        <option value="5">Maj</option>
-                        <option value="6">Czerwiec</option>
-                        <option value="7">Lipiec</option>
-                        <option value="8">Sierpień</option>
-                        <option value="9">Wrzesień</option>
-                        <option value="10">Październik</option>
-                        <option value="11">Listopad</option>
-                        <option value="12">Grudzień</option>
+                        <option value="1" data-i18n="month_jan">Styczeń</option>
+                        <option value="2" data-i18n="month_feb">Luty</option>
+                        <option value="3" data-i18n="month_mar">Marzec</option>
+                        <option value="4" data-i18n="month_apr">Kwiecień</option>
+                        <option value="5" data-i18n="month_may">Maj</option>
+                        <option value="6" data-i18n="month_jun">Czerwiec</option>
+                        <option value="7" data-i18n="month_jul">Lipiec</option>
+                        <option value="8" data-i18n="month_aug">Sierpień</option>
+                        <option value="9" data-i18n="month_sep">Wrzesień</option>
+                        <option value="10" data-i18n="month_oct">Październik</option>
+                        <option value="11" data-i18n="month_nov">Listopad</option>
+                        <option value="12" data-i18n="month_dec">Grudzień</option>
                     </select>
                 </div>
 
                 <div class="form-group form-checkbox">
                     <input type="checkbox" id="expVariable">
-                    <label for="expVariable">Rachunek zmienny (np. prąd/gaz według zużycia)</label>
+                    <label for="expVariable" data-i18n="label_variable">Rachunek zmienny (np. prąd/gaz według zużycia)</label>
                 </div>
 
                 <div class="form-group form-checkbox">
                     <input type="checkbox" id="expActive" checked>
-                    <label for="expActive">Aktywny (uwzględniaj w podsumowaniach i obliczeniach)</label>
+                    <label for="expActive" data-i18n="label_active">Aktywny (uwzględniaj w podsumowaniach i obliczeniach)</label>
                 </div>
 
                 <div class="modal-actions">
-                    <button type="button" class="btn btn-secondary" id="btnCancelModalForm">Anuluj</button>
-                    <button type="submit" class="btn btn-primary" id="btnSaveExpense">Zapisz wydatek</button>
+                    <button type="button" class="btn btn-secondary" id="btnCancelModalForm" data-i18n="btn_cancel">Anuluj</button>
+                    <button type="submit" class="btn btn-primary" id="btnSaveExpense" data-i18n="btn_save">Zapisz wydatek</button>
                 </div>
             </form>
         </div>
@@ -348,43 +353,43 @@
     <div class="modal" id="payConfirmModal">
         <div class="modal-content" style="max-width: 440px;">
             <div class="modal-header">
-                <h2>Rejestracja Płatności</h2>
+                <h2 data-i18n="pay_title">Rejestracja Płatności</h2>
                 <button class="btn-close" id="btnCancelPayModal">&times;</button>
             </div>
             <form id="payConfirmForm" enctype="multipart/form-data">
                 <input type="hidden" id="payConfirmExpenseId">
                 <div class="payment-details-summary" style="margin-bottom: 1.2rem; background: rgba(255, 255, 255, 0.03); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05);">
-                    <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 4px;">Wydatek:</div>
+                    <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 4px;" data-i18n="pay_label_expense">Wydatek:</div>
                     <div id="payConfirmName" style="font-weight: 700; font-size: 1.1rem; color: var(--text-primary); margin-bottom: 12px;">-</div>
                     
                     <div style="display: flex; justify-content: space-between;">
                         <div>
-                            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 2px;">Okres:</div>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 2px;" data-i18n="pay_label_period">Okres:</div>
                             <div id="payConfirmPeriod" style="font-weight: 600; font-size: 0.95rem; color: var(--text-primary);">-</div>
                         </div>
                         <div>
-                            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 2px;">Domyślna kwota:</div>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 2px;" data-i18n="pay_label_default_amount">Domyślna kwota:</div>
                             <div id="payConfirmDefaultAmount" style="font-weight: 600; font-size: 0.95rem; color: var(--text-primary);">-</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="payActualAmount">Faktycznie zapłacona kwota (zł)</label>
+                    <label for="payActualAmount" data-i18n="pay_label_actual_amount">Faktycznie zapłacona kwota (zł)</label>
                     <input type="number" id="payActualAmount" name="amount_paid" step="0.01" required min="0.01" placeholder="np. 120.00" style="font-size: 1.2rem; font-weight: 700; padding: 10px 14px; text-align: center; color: #10B981; border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.04);">
                     <div id="variableHint" style="display: none; font-size: 0.8rem; color: #8b5cf6; margin-top: 4px; text-align: center;">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i> Sugerowana kwota z historii: <span id="variableHintVal">0,00 zł</span>
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> <span id="variableHintText">Sugerowana kwota z historii:</span> <span id="variableHintVal">0,00 zł</span>
                     </div>
                 </div>
 
                 <div class="form-group" style="margin-top: 1rem;">
-                    <label for="payInvoiceFile" style="font-size: 0.85rem; color: var(--text-secondary);"><i class="fa-solid fa-paperclip"></i> Załącznik (Faktura PDF / Zdjęcie paragonu)</label>
+                    <label for="payInvoiceFile" style="font-size: 0.85rem; color: var(--text-secondary);"><i class="fa-solid fa-paperclip"></i> <span data-i18n="pay_label_attachment">Załącznik (Faktura PDF / Zdjęcie paragonu)</span></label>
                     <input type="file" id="payInvoiceFile" name="invoice_file" accept="application/pdf,image/*" style="font-size: 0.85rem; padding: 6px; border: 1px dashed rgba(255,255,255,0.15); border-radius: 6px;">
                 </div>
 
                 <div class="modal-actions">
-                    <button type="button" class="btn btn-secondary" id="btnCancelPayModalForm">Anuluj</button>
-                    <button type="submit" class="btn btn-primary" id="btnConfirmPayment" style="background: linear-gradient(135deg, #059669, #10B981); border: none;">Potwierdź opłatę</button>
+                    <button type="button" class="btn btn-secondary" id="btnCancelPayModalForm" data-i18n="btn_cancel">Anuluj</button>
+                    <button type="submit" class="btn btn-primary" id="btnConfirmPayment" style="background: linear-gradient(135deg, #059669, #10B981); border: none;" data-i18n="btn_confirm_pay">Potwierdź opłatę</button>
                 </div>
             </form>
         </div>
@@ -394,17 +399,17 @@
     <div class="modal" id="priceHistoryModal">
         <div class="modal-content" style="max-width: 540px;">
             <div class="modal-header">
-                <h2><i class="fa-solid fa-chart-line"></i> Historia Ceny i Inflacja</h2>
+                <h2><i class="fa-solid fa-chart-line"></i> <span data-i18n="history_price_title">Historia Ceny i Inflacja</span></h2>
                 <button class="btn-close" id="btnCancelHistoryModal">&times;</button>
             </div>
             <div style="padding: 1rem 0;">
                 <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 12px 16px; border-radius: 8px; margin-bottom: 1rem;">
                     <div>
-                        <div style="font-size: 0.85rem; color: var(--text-secondary);">Wydatek</div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);" data-i18n="pay_label_expense">Wydatek</div>
                         <div id="historyExpenseName" style="font-weight: 700; font-size: 1.1rem; color: var(--text-primary);">-</div>
                     </div>
                     <div style="text-align: right;">
-                        <div style="font-size: 0.85rem; color: var(--text-secondary);">Zmiana ceny (Inflacja)</div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);" data-i18n="history_label_change">Zmiana ceny (Inflacja)</div>
                         <div id="historyPriceChange" style="font-weight: 800; font-size: 1.2rem;">0.0%</div>
                     </div>
                 </div>
@@ -412,9 +417,9 @@
                     <table class="expenses-table" style="width: 100%;">
                         <thead>
                             <tr>
-                                <th>Data wpłaty</th>
-                                <th>Okres</th>
-                                <th>Zapłacona kwota</th>
+                                <th data-i18n="history_th_date">Data wpłaty</th>
+                                <th data-i18n="history_th_period">Okres</th>
+                                <th data-i18n="history_th_amount">Zapłacona kwota</th>
                             </tr>
                         </thead>
                         <tbody id="historyTableBody">

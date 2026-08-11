@@ -9,6 +9,259 @@ let calCurrentYear = new Date().getFullYear();
 let calCurrentMonth = new Date().getMonth() + 1; // 1-12
 let currentViewMode = 'list';
 
+// Language State
+let activeLang = localStorage.getItem('language') || 'pl';
+
+// Translation Dictionary
+const translations = {
+    pl: {
+        tagline: "Rozpiski kosztów utrzymania domu",
+        report_pdf: "Raport PDF",
+        report_csv: "Raport CSV",
+        dev_mode: "Tryb Deweloperski",
+        kpi_prorated_title: "Średniomiesięczny Budżet",
+        kpi_prorated_subtitle: "Miesięczne + proporcjonalne rzadkie",
+        kpi_sinking_fund_title: "Rezerwa Oszczędnościowa",
+        kpi_sinking_fund_subtitle: "Miesięcznie na opłaty rzadkie",
+        kpi_monthly_title: "Zobowiązania Miesięczne",
+        kpi_monthly_subtitle: "Bezpośrednie koszty miesięczne",
+        kpi_yearly_title: "Zobowiązania Roczne",
+        kpi_yearly_subtitle: "Suma rocznych kosztów stałych",
+        kpi_pending_title: "Wymagane Płatności",
+        tab_list: "Lista i Wykresy",
+        tab_calendar: "Widok Kalendarza",
+        cal_title: "Kalendarz Terminów Płatności",
+        cal_prev: "Poprzedni",
+        cal_next: "Następny",
+        alert_title: "Alerty Płatności",
+        alert_send_email: "Wyślij e-mail",
+        alert_send_email_loading: "Wysyłanie...",
+        alert_empty: "Wszystko opłacone! Brak zaległych płatności.",
+        sinking_funds_title: "Planowanie Rezerw (Sinking Funds)",
+        sinking_funds_subtitle: "Odkładaj co miesiąc na poniższe opłaty rzadkie, aby uniknąć obciążenia budżetu w miesiącu płatności:",
+        chart_category_title: "Udział Kategorii (Miesięczny Uśredniony)",
+        chart_projection_title: "Prognoza Wydatków (Kolejne 12 Miesięcy)",
+        expenses_title: "Wydatki Cykliczne i Stałe",
+        btn_add_expense: "Dodaj Wydatek",
+        search_placeholder: "Szukaj wydatków...",
+        filter_all_frequencies: "Wszystkie cykle",
+        filter_monthly: "Miesięczne",
+        filter_biweekly: "Co 2 tygodnie",
+        filter_quarterly: "Kwartalne",
+        filter_semi_annual: "Półroczne",
+        filter_yearly: "Roczne",
+        filter_all_statuses: "Wszystkie statusy",
+        filter_status_overdue: "Zaległe",
+        filter_status_due_soon: "Zbliżające się",
+        filter_status_paid: "Opłacone",
+        filter_status_upcoming: "Nadchodzące",
+        th_name: "Nazwa wydatku",
+        th_amount: "Kwota",
+        th_frequency: "Cykl",
+        th_due_date: "Termin",
+        th_category: "Kategoria",
+        th_status: "Status",
+        th_actions: "Akcje",
+        history_title: "Historia Płatności",
+        th_period: "Okres opłacony",
+        th_date_paid: "Data wpłaty",
+        th_paid_by: "Opłacił(a)",
+        history_empty: "Brak historii płatności.",
+        modal_add_title: "Dodaj Wydatek Cykliczny",
+        modal_edit_title: "Edytuj Wydatek",
+        label_name: "Nazwa wydatku",
+        placeholder_name_eg: "np. Rachunek za Prąd, Ubezpieczenie Domu",
+        label_amount: "Kwota (zł)",
+        label_category: "Kategoria",
+        placeholder_category_eg: "np. Media, Przeglądy, Podatki",
+        label_frequency: "Częstotliwość",
+        label_due_day: "Dzień płatności (1-31)",
+        label_due_month: "Miesiąc płatności (lub miesiąc pierwszej opłaty w roku)",
+        label_variable: "Rachunek zmienny (np. prąd/gaz według zużycia)",
+        label_active: "Aktywny (uwzględniaj w podsumowaniach i obliczeniach)",
+        btn_cancel: "Anuluj",
+        btn_save: "Zapisz wydatek",
+        pay_title: "Rejestracja Płatności",
+        pay_label_expense: "Wydatek:",
+        pay_label_period: "Okres:",
+        pay_label_default_amount: "Domyślna kwota:",
+        pay_label_actual_amount: "Faktycznie zapłacona kwota (zł)",
+        pay_variable_hint: "Sugerowana kwota z historii:",
+        pay_label_attachment: "Załącznik (Faktura PDF / Zdjęcie paragonu)",
+        btn_confirm_pay: "Potwierdź opłatę",
+        history_price_title: "Historia Ceny i Inflacja",
+        history_label_change: "Zmiana ceny (Inflacja)",
+        history_th_date: "Data wpłaty",
+        history_th_period: "Okres",
+        history_th_amount: "Zapłacona kwota",
+        toast_save_success: "Wydatek został zapisany pomyślnie.",
+        toast_save_error: "Błąd podczas zapisywania wydatku.",
+        toast_delete_success: "Wydatek został usunięty z bazy.",
+        toast_delete_error: "Nie udało się usunąć wydatku.",
+        toast_pay_success: "Płatność została pomyślnie zarejestrowana.",
+        toast_pay_error: "Nie udało się zarejestrować płatności.",
+        toast_email_success: "Powiadomienia e-mail zostały wysłane pomyślnie.",
+        toast_email_error: "Błąd podczas wysyłania powiadomień e-mail.",
+        toast_history_error: "Nie udało się pobrać historii ceny.",
+        toast_fetch_error: "Nie udało się załadować danych z bazy PocketBase.",
+        month_jan: "Styczeń",
+        month_feb: "Luty",
+        month_mar: "Marzec",
+        month_apr: "Kwiecień",
+        month_may: "Maj",
+        month_jun: "Czerwiec",
+        month_jul: "Lipiec",
+        month_aug: "Sierpień",
+        month_sep: "Wrzesień",
+        month_oct: "Październik",
+        month_nov: "Listopad",
+        month_dec: "Grudzień",
+        freq_monthly: "Miesięczny",
+        freq_biweekly: "Co 2 tygodnie",
+        freq_quarterly: "Kwartalny (co 3 miesiące)",
+        freq_semi_annual: "Półroczny (co 6 miesięcy)",
+        freq_yearly: "Roczny",
+        status_paid: "Opłacone",
+        status_overdue: "Zaległe",
+        status_due_soon: "Wkrótce termin",
+        status_upcoming: "Nadchodzące",
+        status_inactive: "Nieaktywne",
+        confirm_delete: "Czy na pewno chcesz usunąć ten wydatek cykliczny?",
+        variable_badge: "Zmienny",
+        due_day_prefix: "Dzień",
+        history_loading: "Ładowanie historii...",
+        history_empty_state: "Brak opłaconych historii dla tego wydatku.",
+        history_change_increase: "Wzrost",
+        history_change_decrease: "Spadek",
+        history_change_no_change: "Bez zmian",
+        kpi_due_soon: "Zbliżających się",
+        chart_bar_expected: "Oczekiwane rachunki"
+    },
+    en: {
+        tagline: "Home maintenance expense tracking",
+        report_pdf: "PDF Report",
+        report_csv: "CSV Report",
+        dev_mode: "Development Mode",
+        kpi_prorated_title: "Average Monthly Budget",
+        kpi_prorated_subtitle: "Monthly + pro-rated infrequent expenses",
+        kpi_sinking_fund_title: "Savings Reserve",
+        kpi_sinking_fund_subtitle: "Monthly set aside for infrequent expenses",
+        kpi_monthly_title: "Monthly Expenses",
+        kpi_monthly_subtitle: "Direct monthly recurring costs",
+        kpi_yearly_title: "Yearly Expenses",
+        kpi_yearly_subtitle: "Sum of fixed annual costs",
+        kpi_pending_title: "Required Payments",
+        tab_list: "List & Charts",
+        tab_calendar: "Calendar View",
+        cal_title: "Payment Terms Calendar",
+        cal_prev: "Previous",
+        cal_next: "Next",
+        alert_title: "Payment Alerts",
+        alert_send_email: "Send e-mail",
+        alert_send_email_loading: "Sending...",
+        alert_empty: "All paid! No pending payments.",
+        sinking_funds_title: "Savings Plan (Sinking Funds)",
+        sinking_funds_subtitle: "Save monthly for these infrequent expenses to avoid budget strain in the month they are due:",
+        chart_category_title: "Category Breakdown (Average Monthly)",
+        chart_projection_title: "Expense Projection (Next 12 Months)",
+        expenses_title: "Recurring & Fixed Expenses",
+        btn_add_expense: "Add Expense",
+        search_placeholder: "Search expenses...",
+        filter_all_frequencies: "All cycles",
+        filter_monthly: "Monthly",
+        filter_biweekly: "Biweekly",
+        filter_quarterly: "Quarterly",
+        filter_semi_annual: "Semi-annual",
+        filter_yearly: "Yearly",
+        filter_all_statuses: "All statuses",
+        filter_status_overdue: "Overdue",
+        filter_status_due_soon: "Due soon",
+        filter_status_paid: "Paid",
+        filter_status_upcoming: "Upcoming",
+        th_name: "Expense Name",
+        th_amount: "Amount",
+        th_frequency: "Cycle",
+        th_due_date: "Due Date",
+        th_category: "Category",
+        th_status: "Status",
+        th_actions: "Actions",
+        history_title: "Payment History",
+        th_period: "Paid Period",
+        th_date_paid: "Payment Date",
+        th_paid_by: "Paid By",
+        history_empty: "No payment history.",
+        modal_add_title: "Add Recurring Expense",
+        modal_edit_title: "Edit Expense",
+        label_name: "Expense name",
+        placeholder_name_eg: "e.g. Electricity Bill, Home Insurance",
+        label_amount: "Amount (PLN)",
+        label_category: "Category",
+        placeholder_category_eg: "e.g. Utilities, Maintenance, Taxes",
+        label_frequency: "Frequency",
+        label_due_day: "Payment day (1-31)",
+        label_due_month: "Payment month (or first payment month of the year)",
+        label_variable: "Variable bill (e.g. electricity/gas based on usage)",
+        label_active: "Active (include in totals and summaries)",
+        btn_cancel: "Cancel",
+        btn_save: "Save expense",
+        pay_title: "Record Payment",
+        pay_label_expense: "Expense:",
+        pay_label_period: "Period:",
+        pay_label_default_amount: "Default amount:",
+        pay_label_actual_amount: "Actual amount paid (PLN)",
+        pay_variable_hint: "Suggested amount from history:",
+        pay_label_attachment: "Attachment (Invoice PDF / Receipt image)",
+        btn_confirm_pay: "Confirm Payment",
+        history_price_title: "Price History & Inflation",
+        history_label_change: "Price Change (Inflation)",
+        history_th_date: "Payment Date",
+        history_th_period: "Period",
+        history_th_amount: "Paid Amount",
+        toast_save_success: "Expense saved successfully.",
+        toast_save_error: "Error saving expense.",
+        toast_delete_success: "Expense deleted.",
+        toast_delete_error: "Error deleting expense.",
+        toast_pay_success: "Payment recorded successfully.",
+        toast_pay_error: "Error recording payment.",
+        toast_email_success: "Email alerts sent successfully.",
+        toast_email_error: "Error sending email alerts.",
+        toast_history_error: "Failed to load price history.",
+        toast_fetch_error: "Failed to load data from PocketBase.",
+        month_jan: "January",
+        month_feb: "February",
+        month_mar: "March",
+        month_apr: "April",
+        month_may: "May",
+        month_jun: "June",
+        month_jul: "July",
+        month_aug: "August",
+        month_sep: "September",
+        month_oct: "October",
+        month_nov: "November",
+        month_dec: "December",
+        freq_monthly: "Monthly",
+        freq_biweekly: "Biweekly",
+        freq_quarterly: "Quarterly (every 3 months)",
+        freq_semi_annual: "Semi-annual (every 6 months)",
+        freq_yearly: "Yearly",
+        status_paid: "Paid",
+        status_overdue: "Overdue",
+        status_due_soon: "Due soon",
+        status_upcoming: "Upcoming",
+        status_inactive: "Inactive",
+        confirm_delete: "Are you sure you want to delete this recurring expense?",
+        variable_badge: "Variable",
+        due_day_prefix: "Day",
+        history_loading: "Loading history...",
+        history_empty_state: "No payment history for this expense.",
+        history_change_increase: "Increase",
+        history_change_decrease: "Decrease",
+        history_change_no_change: "No change",
+        kpi_due_soon: "Due soon",
+        chart_bar_expected: "Expected bills"
+    }
+};
+
 // DOM Elements
 const kpiProrated = document.getElementById('kpiProrated');
 const kpiSinkingFund = document.getElementById('kpiSinkingFund');
@@ -77,10 +330,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Register PWA Service Worker
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/static/sw.js')
-            .then(() => console.log('PWA Service Worker zarejestrowany.'))
-            .catch(err => console.error('Błąd rejestracji SW:', err));
+            .then(() => console.log('PWA Service Worker registered.'))
+            .catch(err => console.error('SW registration error:', err));
     }
 
+    // Apply translations on load
+    updateUILanguage();
+    
     fetchData();
     setupEventListeners();
 });
@@ -149,8 +405,99 @@ async function fetchData() {
         await fetchPaymentHistory();
     } catch (err) {
         console.error('Fetch error:', err);
-        showErrorToast('Nie udało się załadować danych z bazy PocketBase.');
+        showErrorToast(translations[activeLang].toast_fetch_error);
     }
+}
+
+// Language Switcher Logic
+window.changeLanguage = function(lang) {
+    if (lang === activeLang) return;
+    activeLang = lang;
+    localStorage.setItem('language', lang);
+    updateUILanguage();
+    
+    // Re-render components with the new language
+    updateKPIs(kpiData);
+    renderTable();
+    renderCalendarView();
+    
+    // We fetch data again to reload notifications/reserves correctly parsed
+    fetchData();
+}
+
+function updateUILanguage() {
+    const t = translations[activeLang];
+    
+    // 1. Update text elements with data-i18n
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (t[key]) {
+            el.textContent = t[key];
+        }
+    });
+
+    // 2. Update placeholder attributes
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (t[key]) {
+            el.placeholder = t[key];
+        }
+    });
+
+    // 3. Update active button highlights
+    const btnPl = document.getElementById('langBtnPl');
+    const btnEn = document.getElementById('langBtnEn');
+    
+    if (btnPl && btnEn) {
+        if (activeLang === 'pl') {
+            btnPl.style.background = 'var(--primary-color)';
+            btnPl.style.color = '#ffffff';
+            btnEn.style.background = 'transparent';
+            btnEn.style.color = 'var(--text-secondary)';
+        } else {
+            btnEn.style.background = 'var(--primary-color)';
+            btnEn.style.color = '#ffffff';
+            btnPl.style.background = 'transparent';
+            btnPl.style.color = 'var(--text-secondary)';
+        }
+    }
+}
+
+function translateCategory(cat, lang) {
+    if (lang === 'pl') return cat;
+    const mapping = {
+        'Serwisy i Przeglądy': 'Maintenance & Inspections',
+        'Bufor i Rezerwy': 'Buffer & Reserves',
+        'Media i Eksploatacja': 'Utilities & Operations',
+        'Podatki': 'Taxes',
+        'Kredyt i Ubezpieczenia': 'Loans & Insurance',
+        'Inne': 'Other',
+        'Stałe Opłaty': 'Fixed Fees',
+        'Podatki i Ubezpieczenia': 'Taxes & Insurance'
+    };
+    return mapping[cat] || cat;
+}
+
+function translateMonthLabel(label, lang) {
+    if (lang === 'pl') return label;
+    const plMonths = ["Sty", "Lut", "Mar", "Kwi", "Maj", "Cze", "Lip", "Sie", "Wrz", "Paź", "Lis", "Gru"];
+    const enMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    let translated = label;
+    plMonths.forEach((pl, idx) => {
+        translated = translated.replace(pl, enMonths[idx]);
+    });
+    return translated;
+}
+
+function translateNotificationMessage(notif, lang) {
+    if (lang === 'pl') return notif.message;
+    const days = Math.abs(notif.days_left);
+    if (notif.status === 'overdue') {
+        return days === 1 ? 'Overdue by 1 day' : `Overdue by ${days} days`;
+    } else if (notif.status === 'due_soon') {
+        return days === 1 ? 'Due in 1 day' : `Due in ${days} days`;
+    }
+    return notif.message;
 }
 
 // Switch between List and Calendar views
@@ -176,9 +523,22 @@ function switchDashboardView(mode) {
 // Render Calendar View Grid
 function renderCalendarView() {
     if (!calendarGrid) return;
+    const t = translations[activeLang];
 
-    const monthNames = ["Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec", "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"];
+    const monthNamesPl = ["Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec", "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"];
+    const monthNamesEn = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const monthNames = activeLang === 'pl' ? monthNamesPl : monthNamesEn;
+    
     calMonthTitle.textContent = `${monthNames[calCurrentMonth - 1]} ${calCurrentYear}`;
+
+    // Update weekdays header
+    const weekdaysHeader = document.getElementById('calendarWeekdaysHeader');
+    if (weekdaysHeader) {
+        const days = activeLang === 'pl' 
+            ? ['Pon', 'Wt', 'Śr', 'Czw', 'Pt', 'Sob', 'Niedz'] 
+            : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        weekdaysHeader.innerHTML = days.map(d => `<div>${d}</div>`).join('');
+    }
 
     // Calculate days in month & starting day of week (Monday=0)
     const firstDay = new Date(calCurrentYear, calCurrentMonth - 1, 1);
@@ -260,6 +620,7 @@ function getCalendarBadgeStyle(status) {
 
 // Update KPI Header Cards
 function updateKPIs(kpis) {
+    const t = translations[activeLang];
     kpiProrated.textContent = formatCurrency(kpis.pro_rated_monthly);
     if (kpiSinkingFund) kpiSinkingFund.textContent = formatCurrency(kpis.sinking_fund_total || 0);
     kpiMonthly.textContent = formatCurrency(kpis.monthly_total);
@@ -267,7 +628,12 @@ function updateKPIs(kpis) {
     
     const pendingCount = kpis.overdue_count + kpis.due_soon_count;
     kpiPending.textContent = pendingCount;
-    kpiPendingDetail.textContent = `${kpis.overdue_count} Po terminie | ${kpis.due_soon_count} Wkrótce`;
+    
+    if (activeLang === 'pl') {
+        kpiPendingDetail.textContent = `${kpis.overdue_count} Zaległych | ${kpis.due_soon_count} Zbliżających się`;
+    } else {
+        kpiPendingDetail.textContent = `${kpis.overdue_count} Overdue | ${kpis.due_soon_count} Due Soon`;
+    }
     
     kpiStatusCard.className = 'kpi-card status-kpi';
     if (kpis.overdue_count > 0) {
@@ -279,39 +645,61 @@ function updateKPIs(kpis) {
 
 // Render Notifications / Alerts Panel
 function renderAlerts(notifications) {
-    alertsCountBadge.textContent = `${notifications.length} ${getAlertNoun(notifications.length)}`;
+    const t = translations[activeLang];
+    let badgeText = '';
+    if (activeLang === 'pl') {
+        badgeText = `${notifications.length} ${getAlertNoun(notifications.length)}`;
+    } else {
+        badgeText = `${notifications.length} ${notifications.length === 1 ? 'alert' : 'alerts'}`;
+    }
+    alertsCountBadge.textContent = badgeText;
     
     if (notifications.length === 0) {
         alertsList.innerHTML = `
             <div class="empty-alerts">
                 <i class="fa-solid fa-circle-check"></i>
-                <p>Wszystko opłacone! Brak zaległych płatności.</p>
+                <p>${t.alert_empty}</p>
             </div>
         `;
         return;
     }
     
-    alertsList.innerHTML = notifications.map((alert, index) => `
-        <div class="alert-item alert-${alert.status} fade-in-alert" style="animation-delay: ${index * 0.05}s">
-            <div class="alert-info">
-                <span class="alert-title">${alert.name}</span>
-                <span class="alert-desc">${alert.message} (Termin: ${formatDateStr(alert.due_date_str)})</span>
+    alertsList.innerHTML = notifications.map((alert, index) => {
+        const alertMsg = translateNotificationMessage(alert, activeLang);
+        const dueText = activeLang === 'pl' ? 'Termin' : 'Due';
+        const checkTitle = activeLang === 'pl' ? 'Oznacz jako opłacone' : 'Mark as paid';
+        return `
+            <div class="alert-item alert-${alert.status} fade-in-alert" style="animation-delay: ${index * 0.05}s">
+                <div class="alert-info">
+                    <span class="alert-title">${alert.name}</span>
+                    <span class="alert-desc">${alertMsg} (${dueText}: ${formatDateStr(alert.due_date_str)})</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span class="alert-amt">${formatCurrency(alert.amount)}</span>
+                    <button class="btn-sm-action pay-btn" onclick="payExpense('${alert.id}')" title="${checkTitle}">
+                        <i class="fa-solid fa-check"></i>
+                    </button>
+                </div>
             </div>
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <span class="alert-amt">${formatCurrency(alert.amount)}</span>
-                <button class="btn-sm-action pay-btn" onclick="payExpense('${alert.id}')" title="Oznacz jako opłacone">
-                    <i class="fa-solid fa-check"></i>
-                </button>
-            </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
+}
+
+function getAlertNoun(count) {
+    if (count === 1) return 'alert';
+    if (count >= 2 && count <= 4) return 'alerty';
+    return 'alertów';
 }
 
 // Render Sinking Funds breakdown
 function renderSinkingFunds(sinkingItems) {
     if (!sinkingFundsList) return;
+    const t = translations[activeLang];
     if (!sinkingItems || sinkingItems.length === 0) {
-        sinkingFundsList.innerHTML = `<p style="font-size: 0.85rem; color: var(--text-muted);">Brak opłat rzadkich (kwartalnych/rocznych) do planowania rezerwy.</p>`;
+        const msg = activeLang === 'pl' 
+            ? 'Brak opłat rzadkich (kwartalnych/rocznych) do planowania rezerwy.' 
+            : 'No infrequent (quarterly/yearly) expenses to plan reserves.';
+        sinkingFundsList.innerHTML = `<p style="font-size: 0.85rem; color: var(--text-muted);">${msg}</p>`;
         return;
     }
 
@@ -322,7 +710,7 @@ function renderSinkingFunds(sinkingItems) {
                 <span style="font-size: 0.78rem; color: var(--text-secondary); margin-left: 6px;">(${getFrequencyTranslation(item.frequency)})</span>
             </div>
             <div style="text-align: right;">
-                <span style="font-weight: 700; color: #8b5cf6;">${formatCurrency(item.monthly_reserve)} / mc</span>
+                <span style="font-weight: 700; color: #8b5cf6;">${formatCurrency(item.monthly_reserve)} ${activeLang === 'pl' ? '/ mc' : '/ mo'}</span>
             </div>
         </div>
     `).join('');
@@ -333,6 +721,7 @@ function renderTable() {
     const searchVal = searchInput.value.toLowerCase();
     const freqVal = filterFrequency.value;
     const statusVal = filterStatus.value;
+    const t = translations[activeLang];
     
     const filtered = expensesList.filter(exp => {
         const matchesSearch = exp.name.toLowerCase().includes(searchVal) || exp.category.toLowerCase().includes(searchVal);
@@ -342,11 +731,14 @@ function renderTable() {
     });
     
     if (filtered.length === 0) {
+        const msg = activeLang === 'pl' 
+            ? 'Brak wydatków spełniających wybrane kryteria.' 
+            : 'No expenses found matching the selected filters.';
         expensesTableBody.innerHTML = `
             <tr>
                 <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 40px;">
                     <i class="fa-solid fa-folder-open" style="font-size: 2rem; margin-bottom: 8px; display: block; opacity: 0.5;"></i>
-                    Brak wydatków spełniających wybrane kryteria.
+                    ${msg}
                 </td>
             </tr>
         `;
@@ -356,16 +748,23 @@ function renderTable() {
     expensesTableBody.innerHTML = filtered.map(exp => {
         const rowClass = exp.active ? '' : 'row-inactive';
         const statusText = getStatusTranslation(exp.status);
+        const cycleWord = activeLang === 'pl' ? 'Dzień' : 'Day';
         const cycleText = (exp.frequency === 'monthly' || exp.frequency === 'biweekly')
-            ? `Dzień ${exp.due_day}` 
+            ? `${cycleWord} ${exp.due_day}` 
             : `${exp.due_day} ${getMonthName(exp.due_month)}`;
             
+        const payTitle = activeLang === 'pl' ? 'Oznacz jako opłacone' : 'Mark as paid';
+        const histTitle = activeLang === 'pl' ? 'Historia cen i inflacja' : 'Price history & inflation';
+        const editTitle = activeLang === 'pl' ? 'Edytuj wydatek' : 'Edit expense';
+        const delTitle = activeLang === 'pl' ? 'Usuń wydatek' : 'Delete expense';
+        const varBadgeText = t.variable_badge;
+
         return `
             <tr class="${rowClass}">
                 <td>
                     <div class="exp-cell-name">
                         ${exp.name}
-                        ${exp.is_variable ? '<span class="status-tag" style="background: rgba(139,92,246,0.15); color: #8b5cf6; margin-left: 6px; font-size: 0.7rem;">Zmienny</span>' : ''}
+                        ${exp.is_variable ? `<span class="status-tag" style="background: rgba(139,92,246,0.15); color: #8b5cf6; margin-left: 6px; font-size: 0.7rem;">${varBadgeText}</span>` : ''}
                     </div>
                 </td>
                 <td>
@@ -378,7 +777,7 @@ function renderTable() {
                     <span class="exp-cell-cycle">${cycleText}</span>
                 </td>
                 <td>
-                    <span class="exp-cell-category">${exp.category}</span>
+                    <span class="exp-cell-category">${translateCategory(exp.category, activeLang)}</span>
                 </td>
                 <td>
                     <span class="status-badge status-${exp.status}">
@@ -388,17 +787,17 @@ function renderTable() {
                 <td>
                     <div class="actions-cell">
                         ${exp.active && exp.status !== 'paid' ? `
-                            <button class="btn-sm-action pay-btn" onclick="payExpense('${exp.id}')" title="Oznacz jako opłacone">
+                            <button class="btn-sm-action pay-btn" onclick="payExpense('${exp.id}')" title="${payTitle}">
                                 <i class="fa-solid fa-check"></i>
                             </button>
                         ` : ''}
-                        <button class="btn-sm-action" onclick="viewPriceHistory('${exp.id}')" title="Historia cen i inflacja" style="background: rgba(139, 92, 246, 0.15); color: #8b5cf6;">
+                        <button class="btn-sm-action" onclick="viewPriceHistory('${exp.id}')" title="${histTitle}" style="background: rgba(139, 92, 246, 0.15); color: #8b5cf6;">
                             <i class="fa-solid fa-chart-line"></i>
                         </button>
-                        <button class="btn-sm-action edit-btn" onclick="editExpense('${exp.id}')" title="Edytuj wydatek">
+                        <button class="btn-sm-action edit-btn" onclick="editExpense('${exp.id}')" title="${editTitle}">
                             <i class="fa-solid fa-pen"></i>
                         </button>
-                        <button class="btn-sm-action delete-btn" onclick="deleteExpense('${exp.id}')" title="Usuń wydatek">
+                        <button class="btn-sm-action delete-btn" onclick="deleteExpense('${exp.id}')" title="${delTitle}">
                             <i class="fa-solid fa-trash-can"></i>
                         </button>
                     </div>
@@ -412,12 +811,13 @@ function renderTable() {
 async function viewPriceHistory(id) {
     const expense = expensesList.find(e => e.id === id);
     if (!expense) return;
+    const t = translations[activeLang];
 
     document.getElementById('historyExpenseName').textContent = expense.name;
     const historyTableBody = document.getElementById('historyTableBody');
     const historyPriceChange = document.getElementById('historyPriceChange');
 
-    historyTableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 20px; color: var(--text-muted);">Ładowanie historii...</td></tr>`;
+    historyTableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 20px; color: var(--text-muted);">${t.history_loading}</td></tr>`;
     priceHistoryModal.classList.add('open');
 
     try {
@@ -427,18 +827,18 @@ async function viewPriceHistory(id) {
 
         const changePct = data.price_change_pct;
         if (changePct > 0) {
-            historyPriceChange.textContent = `+${changePct}% (Wzrost)`;
+            historyPriceChange.textContent = `+${changePct}% (${t.history_change_increase})`;
             historyPriceChange.style.color = '#ef4444';
         } else if (changePct < 0) {
-            historyPriceChange.textContent = `${changePct}% (Spadek)`;
+            historyPriceChange.textContent = `${changePct}% (${t.history_change_decrease})`;
             historyPriceChange.style.color = '#10b981';
         } else {
-            historyPriceChange.textContent = `0.0% (Bez zmian)`;
+            historyPriceChange.textContent = `0.0% (${t.history_change_no_change})`;
             historyPriceChange.style.color = '#94a3b8';
         }
 
         if (data.history.length === 0) {
-            historyTableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 20px; color: var(--text-muted);">Brak opłaconych historii dla tego wydatku.</td></tr>`;
+            historyTableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 20px; color: var(--text-muted);">${t.history_empty_state}</td></tr>`;
             return;
         }
 
@@ -452,24 +852,30 @@ async function viewPriceHistory(id) {
 
     } catch (err) {
         console.error('History fetch error:', err);
-        showErrorToast('Nie udało się pobrać historii ceny.');
+        showErrorToast(t.toast_history_error);
     }
 }
 
 // Chart.js Visualizations
 function updateCharts(doughnutData, barData) {
+    const t = translations[activeLang];
     const ctxDoughnut = document.getElementById('categoryDoughnutChart').getContext('2d');
     const colors = ['#6366F1', '#06B6D4', '#10B981', '#F59E0B', '#EF4444', '#3B82F6', '#EC4899', '#8B5CF6'];
     
+    // Translate labels
+    const translatedDoughnutLabels = doughnutData.labels.map(l => translateCategory(l, activeLang));
+    const translatedBarLabels = barData.map(d => translateMonthLabel(d.label, activeLang));
+    const barValues = barData.map(d => d.amount);
+
     if (categoryChart) {
-        categoryChart.data.labels = doughnutData.labels;
+        categoryChart.data.labels = translatedDoughnutLabels;
         categoryChart.data.datasets[0].data = doughnutData.values;
         categoryChart.update();
     } else {
         categoryChart = new Chart(ctxDoughnut, {
             type: 'doughnut',
             data: {
-                labels: doughnutData.labels,
+                labels: translatedDoughnutLabels,
                 datasets: [{
                     data: doughnutData.values,
                     backgroundColor: colors,
@@ -484,7 +890,11 @@ function updateCharts(doughnutData, barData) {
                     legend: { position: 'right', labels: { color: '#F3F4F6', font: { family: 'Plus Jakarta Sans', size: 11 } } },
                     tooltip: {
                         callbacks: {
-                            label: function(context) { return ` ${context.label}: ${context.raw.toLocaleString('pl-PL')} zł/mc`; }
+                            label: function(context) { 
+                                const valText = context.raw.toLocaleString(activeLang === 'pl' ? 'pl-PL' : 'en-US');
+                                const suffix = activeLang === 'pl' ? 'zł/mc' : 'PLN/mo';
+                                return ` ${context.label}: ${valText} ${suffix}`; 
+                            }
                         }
                     }
                 },
@@ -494,20 +904,19 @@ function updateCharts(doughnutData, barData) {
     }
 
     const ctxBar = document.getElementById('projectionBarChart').getContext('2d');
-    const barLabels = barData.map(d => d.label);
-    const barValues = barData.map(d => d.amount);
     
     if (projectionChart) {
-        projectionChart.data.labels = barLabels;
+        projectionChart.data.labels = translatedBarLabels;
         projectionChart.data.datasets[0].data = barValues;
+        projectionChart.data.datasets[0].label = t.chart_bar_dataset_label;
         projectionChart.update();
     } else {
         projectionChart = new Chart(ctxBar, {
             type: 'bar',
             data: {
-                labels: barLabels,
+                labels: translatedBarLabels,
                 datasets: [{
-                    label: 'Suma wydatków (zł)',
+                    label: t.chart_bar_dataset_label,
                     data: barValues,
                     backgroundColor: 'rgba(99, 102, 241, 0.4)',
                     borderColor: '#6366F1',
@@ -523,7 +932,12 @@ function updateCharts(doughnutData, barData) {
                     legend: { display: false },
                     tooltip: {
                         callbacks: {
-                            label: function(context) { return ` Oczekiwane rachunki: ${context.raw.toLocaleString('pl-PL')} zł`; }
+                            label: function(context) { 
+                                const valText = context.raw.toLocaleString(activeLang === 'pl' ? 'pl-PL' : 'en-US');
+                                const prefix = t.chart_bar_expected;
+                                const currency = activeLang === 'pl' ? 'zł' : 'PLN';
+                                return ` ${prefix}: ${valText} ${currency}`; 
+                            }
                         }
                     }
                 },
@@ -538,28 +952,32 @@ function updateCharts(doughnutData, barData) {
 
 // Handlers
 async function handleSendEmailAlerts() {
+    const t = translations[activeLang];
     btnSendEmailAlerts.disabled = true;
-    btnSendEmailAlerts.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Wysyłanie...`;
+    btnSendEmailAlerts.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${t.alert_send_email_loading}`;
     try {
         const response = await fetch('/api/notifications/send-email', { method: 'POST' });
         const res = await response.json();
+        
+        // Translate message if backend returned success
         if (res.success) {
-            showSuccessToast(res.message);
+            showSuccessToast(t.toast_email_success);
         } else {
-            showErrorToast(res.message);
+            showErrorToast(t.toast_email_error);
         }
     } catch (err) {
         console.error('Email alert error:', err);
-        showErrorToast('Nie udało się wysłać powiadomienia e-mail (sprawdź SMTP).');
+        showErrorToast(t.toast_email_error);
     } finally {
         btnSendEmailAlerts.disabled = false;
-        btnSendEmailAlerts.innerHTML = `<i class="fa-solid fa-envelope"></i> Wyślij e-mail`;
+        btnSendEmailAlerts.innerHTML = `<i class="fa-solid fa-envelope"></i> ${t.alert_send_email}`;
     }
 }
 
 async function payExpense(id) {
     const expense = expensesList.find(e => e.id === id);
     if (!expense) return;
+    const t = translations[activeLang];
     
     payConfirmExpenseId.value = id;
     payConfirmName.textContent = expense.name;
@@ -570,6 +988,7 @@ async function payExpense(id) {
     // Check if expense is variable
     if (expense.is_variable && variableHint && variableHintVal) {
         variableHint.style.display = 'block';
+        document.getElementById('variableHintText').textContent = t.pay_variable_hint;
         try {
             const hRes = await fetch(`/api/expenses/${id}/history`);
             if (hRes.ok) {
@@ -595,16 +1014,17 @@ async function payExpense(id) {
 }
 
 async function deleteExpense(id) {
-    if (!confirm('Czy na pewno chcesz usunąć ten wydatek cykliczny?')) return;
+    const t = translations[activeLang];
+    if (!confirm(t.confirm_delete)) return;
     try {
         const response = await fetch(`/api/expenses/${id}`, { method: 'DELETE' });
         if (!response.ok) throw new Error('Delete request failed');
         
         fetchData();
-        showSuccessToast('Wydatek został usunięty z bazy.');
+        showSuccessToast(t.toast_delete_success);
     } catch (err) {
         console.error('Delete error:', err);
-        showErrorToast('Nie udało się usunąć wydatku.');
+        showErrorToast(t.toast_delete_error);
     }
 }
 
@@ -617,6 +1037,7 @@ function editExpense(id) {
 // Modal Form Submission
 async function handleFormSubmit(e) {
     e.preventDefault();
+    const t = translations[activeLang];
     
     const id = expId.value;
     const freq = expFrequency.value;
@@ -645,19 +1066,20 @@ async function handleFormSubmit(e) {
         
         closeModal();
         fetchData();
-        showSuccessToast(id ? 'Wydatek został zaktualizowany.' : 'Wydatek został utworzony.');
+        showSuccessToast(t.toast_save_success);
     } catch (err) {
         console.error('Submit error:', err);
-        showErrorToast('Nie udało się zapisać wydatku.');
+        showErrorToast(t.toast_save_error);
     }
 }
 
 // Modal Helpers
 function openModal(expense = null) {
+    const t = translations[activeLang];
     expenseForm.reset();
     
     if (expense) {
-        modalTitle.textContent = 'Edytuj Wydatek Cykliczny';
+        modalTitle.textContent = t.modal_edit_title;
         expId.value = expense.id;
         expName.value = expense.name;
         expAmount.value = expense.amount;
@@ -676,7 +1098,7 @@ function openModal(expense = null) {
             expDueMonth.removeAttribute('required');
         }
     } else {
-        modalTitle.textContent = 'Dodaj Wydatek Cykliczny';
+        modalTitle.textContent = t.modal_add_title;
         expId.value = '';
         dueMonthGroup.style.display = 'none';
         expDueMonth.removeAttribute('required');
@@ -693,28 +1115,33 @@ function closeModal() {
 
 // Formatting Helpers
 function formatCurrency(val) {
-    return new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(val);
+    const locale = activeLang === 'pl' ? 'pl-PL' : 'en-US';
+    return new Intl.NumberFormat(locale, { style: 'currency', currency: 'PLN' }).format(val);
 }
 
 function formatDateStr(str) {
     if (!str) return '';
     const date = new Date(str + 'T00:00:00');
-    return date.toLocaleDateString('pl-PL', { month: 'short', day: 'numeric', year: 'numeric' });
+    const locale = activeLang === 'pl' ? 'pl-PL' : 'en-US';
+    return date.toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 function getMonthName(m) {
     if (!m) return '';
-    const months = ['Sty', 'Lut', 'Mar', 'Kwi', 'Maj', 'Cze', 'Lip', 'Sie', 'Wrz', 'Paź', 'Lis', 'Gru'];
+    const monthsPl = ['Sty', 'Lut', 'Mar', 'Kwi', 'Maj', 'Cze', 'Lip', 'Sie', 'Wrz', 'Paź', 'Lis', 'Gru'];
+    const monthsEn = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = activeLang === 'pl' ? monthsPl : monthsEn;
     return months[m - 1] || '';
 }
 
 function getFrequencyTranslation(freq) {
+    const t = translations[activeLang];
     switch (freq) {
-        case 'monthly': return 'Miesięczny';
-        case 'biweekly': return 'Co 2 tygodnie';
-        case 'quarterly': return 'Kwartalny';
-        case 'semi_annual': return 'Półroczny';
-        case 'yearly': return 'Roczny';
+        case 'monthly': return t.freq_monthly;
+        case 'biweekly': return t.freq_biweekly;
+        case 'quarterly': return t.freq_quarterly;
+        case 'semi_annual': return t.freq_semi_annual;
+        case 'yearly': return t.freq_yearly;
         default: return freq;
     }
 }
@@ -730,20 +1157,15 @@ function getStatusIcon(status) {
 }
 
 function getStatusTranslation(status) {
+    const t = translations[activeLang];
     switch (status) {
-        case 'paid': return 'Opłacone';
-        case 'overdue': return 'Zaległe';
-        case 'due_soon': return 'Wkrótce termin';
-        case 'upcoming': return 'Nadchodzące';
-        case 'inactive': return 'Nieaktywne';
+        case 'paid': return t.status_paid;
+        case 'overdue': return t.status_overdue;
+        case 'due_soon': return t.status_due_soon;
+        case 'upcoming': return t.status_upcoming;
+        case 'inactive': return t.status_inactive;
         default: return status;
     }
-}
-
-function getAlertNoun(count) {
-    if (count === 1) return 'alert';
-    if (count >= 2 && count <= 4) return 'alerty';
-    return 'alertów';
 }
 
 function showSuccessToast(message) { showToast(message, 'success'); }
@@ -806,13 +1228,14 @@ async function fetchPaymentHistory() {
 function renderPaymentsTable(payments) {
     const body = document.getElementById('paymentsTableBody');
     if (!body) return;
+    const t = translations[activeLang];
     
     if (payments.length === 0) {
         body.innerHTML = `
             <tr>
                 <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
                     <i class="fa-solid fa-receipt" style="font-size: 2rem; margin-bottom: 0.5rem; display: block; opacity: 0.5;"></i>
-                    Brak historii płatności.
+                    ${t.history_empty}
                 </td>
             </tr>
         `;
@@ -822,7 +1245,7 @@ function renderPaymentsTable(payments) {
     body.innerHTML = payments.map(item => `
         <tr>
             <td><strong>${item.expense_name}</strong></td>
-            <td><span class="exp-cell-category">${item.category}</span></td>
+            <td><span class="exp-cell-category">${translateCategory(item.category, activeLang)}</span></td>
             <td><span style="font-weight: 500;">${formatPeriod(item.period)}</span></td>
             <td><span class="exp-cell-amount" style="color: #10B981;">${formatCurrency(item.amount_paid)}</span></td>
             <td><span>${formatDateStr(item.date_paid)}</span></td>
@@ -874,6 +1297,7 @@ async function handlePayConfirmSubmit(e) {
     e.preventDefault();
     const id = payConfirmExpenseId.value;
     const formData = new FormData(payConfirmForm);
+    const t = translations[activeLang];
     
     try {
         const response = await fetch(`/api/expenses/${id}/pay`, {
@@ -884,10 +1308,10 @@ async function handlePayConfirmSubmit(e) {
         
         closePayModal();
         fetchData();
-        showSuccessToast('Płatność została pomyślnie zarejestrowana.');
+        showSuccessToast(t.toast_pay_success);
     } catch (err) {
         console.error('Payment error:', err);
-        showErrorToast('Nie udało się zarejestrować płatności.');
+        showErrorToast(t.toast_pay_error);
     }
 }
 
