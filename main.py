@@ -195,8 +195,8 @@ def calculate_status(expense: Dict[str, Any], today: datetime.date) -> Dict[str,
 def get_dashboard(request: Request, current_user: UserProfile = Depends(get_current_user)):
     dev_mode = os.getenv("DEV_MODE", "false").lower() == "true"
     return templates.TemplateResponse(
-        "index.html",
-        {
+        name="index.html",
+        context={
             "request": request,
             "user": current_user,
             "dev_mode": dev_mode,
