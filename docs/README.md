@@ -20,6 +20,7 @@ HomeBudget is a lightweight, responsive, and secure Python web application desig
 
 To get started or explore specific components, choose a section from the sidebar or click below:
 
-1.  [**Architecture & Flow**](architecture.md): Explore components, database relations, and authentication flow.
-2.  [**Quadlet Deployment**](deployment.md): Detailed operational manual for deploying the application on a Podman host.
-3.  [**CI/CD & Releases**](ci-cd.md): Explanation of GitHub Actions, image builds, and release tagging versioning.
+1.  [**Features & Interface**](features.md): Overview of all interface components, theme switcher, and localized reports.
+2.  [**Architecture & Flow**](architecture.md): Explore components, database relations, and authentication flow.
+3.  [**Quadlet Deployment**](deployment.md): Detailed operational manual for deploying the application on a Podman host.
+4.  [**CI/CD & Releases**](ci-cd.md): Explanation of GitHub Actions, image builds, and release tagging versioning.
