@@ -3,6 +3,8 @@ let expensesList = [];
 let kpiData = {};
 let categoryChart = null;
 let projectionChart = null;
+let lastChartDoughnutData = null;
+let lastChartBarData = null;
 
 // Calendar State
 let calCurrentYear = new Date().getFullYear();
@@ -11,6 +13,9 @@ let currentViewMode = 'list';
 
 // Language State
 let activeLang = localStorage.getItem('language') || 'pl';
+
+// Theme State
+let activeTheme = localStorage.getItem('theme') || 'dark';
 
 // Translation Dictionary
 const translations = {
@@ -135,7 +140,13 @@ const translations = {
         history_change_decrease: "Spadek",
         history_change_no_change: "Bez zmian",
         kpi_due_soon: "Zbliżających się",
-        chart_bar_expected: "Oczekiwane rachunki"
+        chart_bar_expected: "Oczekiwane rachunki",
+        budget_title: "Budżety Kategorii",
+        budget_spent: "Wydane",
+        budget_limit: "Limit",
+        budget_prompt: "Podaj nowy limit budżetu dla kategorii {cat} (PLN):",
+        budget_invalid: "Podano niepoprawną kwotę!",
+        budget_over: "Przekroczony budżet!"
     },
     en: {
         tagline: "Home maintenance expense tracking",
@@ -258,8 +269,26 @@ const translations = {
         history_change_decrease: "Decrease",
         history_change_no_change: "No change",
         kpi_due_soon: "Due soon",
-        chart_bar_expected: "Expected bills"
+        chart_bar_expected: "Expected bills",
+        budget_title: "Category Budgets",
+        budget_spent: "Spent",
+        budget_limit: "Limit",
+        budget_prompt: "Enter new budget limit for category {cat} (PLN):",
+        budget_invalid: "Invalid amount entered!",
+        budget_over: "Over budget!"
     }
+};
+
+// Default category budget thresholds
+const defaultBudgets = {
+    'Media i Eksploatacja': 1000,
+    'Kredyt i Ubezpieczenia': 2000,
+    'Stałe Opłaty': 800,
+    'Serwisy i Przeglądy': 500,
+    'Podatki': 300,
+    'Podatki i Ubezpieczenia': 800,
+    'Bufor i Rezerwy': 500,
+    'Inne': 300
 };
 
 // DOM Elements
@@ -275,6 +304,7 @@ const alertsList = document.getElementById('alertsList');
 const alertsCountBadge = document.getElementById('alertsCountBadge');
 const sinkingFundsList = document.getElementById('sinkingFundsList');
 const expensesTableBody = document.getElementById('expensesTableBody');
+const categoryBudgetsList = document.getElementById('categoryBudgetsList');
 
 const searchInput = document.getElementById('expenseSearch');
 const filterFrequency = document.getElementById('filterFrequency');
@@ -333,6 +363,10 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(() => console.log('PWA Service Worker registered.'))
             .catch(err => console.error('SW registration error:', err));
     }
+
+    // Apply active theme
+    document.body.className = activeTheme === 'light' ? 'light-theme' : '';
+    updateThemeIcon();
 
     // Apply translations on load
     updateUILanguage();
@@ -394,6 +428,8 @@ async function fetchData() {
         
         expensesList = data.expenses;
         kpiData = data.kpis;
+        lastChartDoughnutData = data.doughnut_chart;
+        lastChartBarData = data.projection_chart;
         
         updateKPIs(data.kpis);
         renderAlerts(data.notifications);
@@ -401,6 +437,7 @@ async function fetchData() {
         renderTable();
         renderCalendarView();
         updateCharts(data.doughnut_chart, data.projection_chart);
+        renderCategoryBudgets(data.doughnut_chart);
         
         await fetchPaymentHistory();
     } catch (err) {
@@ -420,6 +457,9 @@ window.changeLanguage = function(lang) {
     updateKPIs(kpiData);
     renderTable();
     renderCalendarView();
+    if (lastChartDoughnutData) {
+        renderCategoryBudgets(lastChartDoughnutData);
+    }
     
     // We fetch data again to reload notifications/reserves correctly parsed
     fetchData();
@@ -460,6 +500,114 @@ function updateUILanguage() {
             btnPl.style.background = 'transparent';
             btnPl.style.color = 'var(--text-secondary)';
         }
+    }
+}
+
+// Theme Switcher Logic
+window.toggleTheme = function() {
+    activeTheme = activeTheme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('theme', activeTheme);
+    document.body.className = activeTheme === 'light' ? 'light-theme' : '';
+    
+    updateThemeIcon();
+    
+    // Rebuild charts to adapt legends and grid colors
+    if (lastChartDoughnutData && lastChartBarData) {
+        updateCharts(lastChartDoughnutData, lastChartBarData);
+    }
+}
+
+function updateThemeIcon() {
+    const icon = document.getElementById('themeIcon');
+    if (!icon) return;
+    if (activeTheme === 'light') {
+        icon.className = 'fa-solid fa-sun';
+        icon.style.color = '#ff9800';
+    } else {
+        icon.className = 'fa-solid fa-moon';
+        icon.style.color = '#e1e2e6';
+    }
+}
+
+// Category Budget Logic
+function renderCategoryBudgets(doughnutData) {
+    if (!categoryBudgetsList) return;
+    const t = translations[activeLang];
+    
+    // Load custom budgets from localStorage
+    let budgets = JSON.parse(localStorage.getItem('categoryBudgets') || '{}');
+    
+    // Merge default limits
+    for (const cat in defaultBudgets) {
+        if (budgets[cat] === undefined) {
+            budgets[cat] = defaultBudgets[cat];
+        }
+    }
+
+    if (!doughnutData || !doughnutData.labels || doughnutData.labels.length === 0) {
+        categoryBudgetsList.innerHTML = `<p style="font-size: 0.82rem; color: var(--text-muted); text-align: center;">Brak danych do wyświetlenia limitów.</p>`;
+        return;
+    }
+
+    categoryBudgetsList.innerHTML = doughnutData.labels.map((cat, idx) => {
+        const spent = doughnutData.values[idx];
+        const limit = budgets[cat] || 1000;
+        const pct = Math.min((spent / limit) * 100, 200).toFixed(0);
+        const isOver = spent > limit;
+        
+        const barColor = isOver ? '#f44336' : '#03a9f4';
+        const badgeClass = isOver ? 'budget-status-over' : 'budget-status-ok';
+        const badgeText = isOver ? t.budget_over : 'OK';
+        const editTitle = activeLang === 'pl' ? 'Zmień limit budżetu' : 'Change budget limit';
+
+        return `
+            <div class="budget-item">
+                <div class="budget-header">
+                    <div class="budget-name-group">
+                        <span>${translateCategory(cat, activeLang)}</span>
+                        <button class="budget-edit-btn" onclick="editCategoryBudget('${cat}')" title="${editTitle}">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </div>
+                    <span class="budget-status-badge ${badgeClass}">${badgeText}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2px;">
+                    <div class="budget-vals">
+                        ${t.budget_spent}: <span class="highlight">${formatCurrency(spent)}</span> / ${t.budget_limit}: <span>${formatCurrency(limit)}</span>
+                    </div>
+                    <div style="font-size: 0.8rem; font-weight: 700; color: ${isOver ? '#f44336' : 'var(--text-secondary)'}">${pct}%</div>
+                </div>
+                <div class="budget-bar-container">
+                    <div class="budget-bar-fill" style="width: ${Math.min(pct, 100)}%; background: ${barColor};"></div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+window.editCategoryBudget = function(cat) {
+    const t = translations[activeLang];
+    let budgets = JSON.parse(localStorage.getItem('categoryBudgets') || '{}');
+    
+    // Retrieve current limit
+    const currentLimit = budgets[cat] !== undefined ? budgets[cat] : (defaultBudgets[cat] || 1000);
+    
+    const promptMsg = t.budget_prompt.replace('{cat}', translateCategory(cat, activeLang));
+    const newLimitStr = prompt(promptMsg, currentLimit);
+    
+    if (newLimitStr === null) return; // User cancelled
+    
+    const newLimit = parseFloat(newLimitStr);
+    if (isNaN(newLimit) || newLimit <= 0) {
+        alert(t.budget_invalid);
+        return;
+    }
+    
+    budgets[cat] = newLimit;
+    localStorage.setItem('categoryBudgets', JSON.stringify(budgets));
+    
+    if (lastChartDoughnutData) {
+        renderCategoryBudgets(lastChartDoughnutData);
     }
 }
 
@@ -859,95 +1007,99 @@ async function viewPriceHistory(id) {
 // Chart.js Visualizations
 function updateCharts(doughnutData, barData) {
     const t = translations[activeLang];
+    
+    // Destroy previous instances to force clean repaint with updated theme configurations
+    if (categoryChart) {
+        categoryChart.destroy();
+        categoryChart = null;
+    }
+    if (projectionChart) {
+        projectionChart.destroy();
+        projectionChart = null;
+    }
+
     const ctxDoughnut = document.getElementById('categoryDoughnutChart').getContext('2d');
     const colors = ['#6366F1', '#06B6D4', '#10B981', '#F59E0B', '#EF4444', '#3B82F6', '#EC4899', '#8B5CF6'];
     
+    // Theme-driven options
+    const isLight = activeTheme === 'light';
+    const textColor = isLight ? '#1E293B' : '#F3F4F6';
+    const gridColor = isLight ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.04)';
+    const tickColor = isLight ? '#4B5563' : '#9CA3AF';
+
     // Translate labels
     const translatedDoughnutLabels = doughnutData.labels.map(l => translateCategory(l, activeLang));
     const translatedBarLabels = barData.map(d => translateMonthLabel(d.label, activeLang));
     const barValues = barData.map(d => d.amount);
 
-    if (categoryChart) {
-        categoryChart.data.labels = translatedDoughnutLabels;
-        categoryChart.data.datasets[0].data = doughnutData.values;
-        categoryChart.update();
-    } else {
-        categoryChart = new Chart(ctxDoughnut, {
-            type: 'doughnut',
-            data: {
-                labels: translatedDoughnutLabels,
-                datasets: [{
-                    data: doughnutData.values,
-                    backgroundColor: colors,
-                    borderWidth: 1,
-                    borderColor: 'rgba(255, 255, 255, 0.08)'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'right', labels: { color: '#F3F4F6', font: { family: 'Plus Jakarta Sans', size: 11 } } },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) { 
-                                const valText = context.raw.toLocaleString(activeLang === 'pl' ? 'pl-PL' : 'en-US');
-                                const suffix = activeLang === 'pl' ? 'zł/mc' : 'PLN/mo';
-                                return ` ${context.label}: ${valText} ${suffix}`; 
-                            }
+    categoryChart = new Chart(ctxDoughnut, {
+        type: 'doughnut',
+        data: {
+            labels: translatedDoughnutLabels,
+            datasets: [{
+                data: doughnutData.values,
+                backgroundColor: colors,
+                borderWidth: 1,
+                borderColor: isLight ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.08)'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'right', labels: { color: textColor, font: { family: 'Plus Jakarta Sans', size: 11 } } },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) { 
+                            const valText = context.raw.toLocaleString(activeLang === 'pl' ? 'pl-PL' : 'en-US');
+                            const suffix = activeLang === 'pl' ? 'zł/mc' : 'PLN/mo';
+                            return ` ${context.label}: ${valText} ${suffix}`; 
                         }
                     }
-                },
-                cutout: '70%'
-            }
-        });
-    }
+                }
+            },
+            cutout: '70%'
+        }
+    });
 
     const ctxBar = document.getElementById('projectionBarChart').getContext('2d');
     
-    if (projectionChart) {
-        projectionChart.data.labels = translatedBarLabels;
-        projectionChart.data.datasets[0].data = barValues;
-        projectionChart.data.datasets[0].label = t.chart_bar_dataset_label;
-        projectionChart.update();
-    } else {
-        projectionChart = new Chart(ctxBar, {
-            type: 'bar',
-            data: {
-                labels: translatedBarLabels,
-                datasets: [{
-                    label: t.chart_bar_dataset_label,
-                    data: barValues,
-                    backgroundColor: 'rgba(99, 102, 241, 0.4)',
-                    borderColor: '#6366F1',
-                    borderWidth: 2,
-                    borderRadius: 6,
-                    hoverBackgroundColor: '#8B5CF6'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) { 
-                                const valText = context.raw.toLocaleString(activeLang === 'pl' ? 'pl-PL' : 'en-US');
-                                const prefix = t.chart_bar_expected;
-                                const currency = activeLang === 'pl' ? 'zł' : 'PLN';
-                                return ` ${prefix}: ${valText} ${currency}`; 
-                            }
+    projectionChart = new Chart(ctxBar, {
+        type: 'bar',
+        data: {
+            labels: translatedBarLabels,
+            datasets: [{
+                label: t.chart_bar_dataset_label,
+                data: barValues,
+                backgroundColor: isLight ? 'rgba(2, 136, 209, 0.4)' : 'rgba(99, 102, 241, 0.4)',
+                borderColor: isLight ? '#0288d1' : '#6366F1',
+                borderWidth: 2,
+                borderRadius: 6,
+                hoverBackgroundColor: '#8B5CF6'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) { 
+                            const valText = context.raw.toLocaleString(activeLang === 'pl' ? 'pl-PL' : 'en-US');
+                            const prefix = t.chart_bar_expected;
+                            const currency = activeLang === 'pl' ? 'zł' : 'PLN';
+                            return ` ${prefix}: ${valText} ${currency}`; 
                         }
                     }
-                },
-                scales: {
-                    x: { grid: { display: false }, ticks: { color: '#9CA3AF', font: { family: 'Plus Jakarta Sans', size: 10 } } },
-                    y: { grid: { color: 'rgba(255, 255, 255, 0.04)' }, ticks: { color: '#9CA3AF', font: { family: 'Plus Jakarta Sans', size: 10 } } }
                 }
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: tickColor, font: { family: 'Plus Jakarta Sans', size: 10 } } },
+                y: { grid: { color: gridColor }, ticks: { color: tickColor, font: { family: 'Plus Jakarta Sans', size: 10 } } }
             }
-        });
-    }
+        }
+    });
 }
 
 // Handlers
@@ -1109,6 +1261,7 @@ function openModal(expense = null) {
     expenseModal.classList.add('open');
 }
 
+// Force close open modal
 function closeModal() {
     expenseModal.classList.remove('open');
 }
