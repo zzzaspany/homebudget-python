@@ -41,8 +41,8 @@ class PocketBaseClient:
 
         try:
             response = self.client.request(method, url, **kwargs)
-            if response.status_code == 401:
-                # Token might have expired, try re-authenticating once
+            if response.status_code in [401, 403]:
+                # Token might have expired or invalidated, try re-authenticating once
                 self._authenticate()
                 response = self.client.request(method, url, **kwargs)
             response.raise_for_status()
