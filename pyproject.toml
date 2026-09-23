@@ -23,3 +23,10 @@ extend-immutable-calls = [
     "fastapi.Path",
     "fastapi.Query",
 ]
+
+[tool.pytest.ini_options]
+# The tests import `main`, `auth` and friends from the repository root. `python -m pytest` happens
+# to put the working directory on sys.path, the `pytest` console script does not — so without this
+# the suite passes locally and fails in CI with ModuleNotFoundError.
+pythonpath = ["."]
+testpaths = ["tests"]
