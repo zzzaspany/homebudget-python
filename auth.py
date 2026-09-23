@@ -1,6 +1,8 @@
 import os
-from fastapi import Request, HTTPException, status
+
+from fastapi import HTTPException, Request, status
 from pydantic import BaseModel
+
 
 class UserProfile(BaseModel):
     username: str

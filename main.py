@@ -1,17 +1,18 @@
+import calendar
 import csv
+import datetime
 import io
 import os
-import calendar
-import datetime
-from typing import Optional, Dict, Any, List
-from fastapi import FastAPI, Request, Depends, HTTPException, status, Response, File, UploadFile, Form
-from fastapi.responses import HTMLResponse, JSONResponse
+from typing import Any
+
+from fastapi import Depends, FastAPI, File, HTTPException, Request, Response, UploadFile
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 
+from auth import UserProfile, get_current_user
 from pb_client import pb
-from auth import get_current_user, UserProfile
 from utils.email_notifier import send_payment_reminder_email
 from utils.report_generator import generate_homebudget_pdf_report
 
@@ -31,26 +32,26 @@ class ExpenseCreate(BaseModel):
     amount: float = Field(..., gt=0)
     frequency: str = Field(..., pattern="^(monthly|yearly|quarterly|semi_annual|biweekly)$")
     due_day: int = Field(..., ge=1, le=31)
-    due_month: Optional[int] = Field(None, ge=1, le=12)
+    due_month: int | None = Field(None, ge=1, le=12)
     category: str = Field(..., min_length=1)
     active: bool = True
     is_variable: bool = False
 
 
 class ExpenseUpdate(BaseModel):
-    name: Optional[str] = None
-    amount: Optional[float] = None
-    frequency: Optional[str] = None
-    due_day: Optional[int] = None
-    due_month: Optional[int] = None
-    category: Optional[str] = None
-    last_paid_period: Optional[str] = None
-    active: Optional[bool] = None
-    is_variable: Optional[bool] = None
+    name: str | None = None
+    amount: float | None = None
+    frequency: str | None = None
+    due_day: int | None = None
+    due_month: int | None = None
+    category: str | None = None
+    last_paid_period: str | None = None
+    active: bool | None = None
+    is_variable: bool | None = None
 
 
 class PaymentRequest(BaseModel):
-    amount_paid: Optional[float] = None
+    amount_paid: float | None = None
 
 
 # Date Helpers
@@ -58,7 +59,7 @@ def get_days_in_month(year: int, month: int) -> int:
     return calendar.monthrange(year, month)[1]
 
 
-def calculate_status(expense: Dict[str, Any], today: datetime.date) -> Dict[str, Any]:
+def calculate_status(expense: dict[str, Any], today: datetime.date) -> dict[str, Any]:
     """
     Calculates status ("paid", "overdue", "due_soon", "upcoming"),
     next due date (date object), and days remaining for all supported frequencies.
@@ -209,7 +210,7 @@ def api_get_expenses(current_user: UserProfile = Depends(get_current_user)):
     try:
         raw_expenses = pb.get_expenses()
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to fetch from database: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch from database: {str(e)}") from e
 
     today = datetime.date.today()
 
@@ -220,8 +221,8 @@ def api_get_expenses(current_user: UserProfile = Depends(get_current_user)):
     yearly_total = 0.0
     sinking_fund_total = 0.0
 
-    category_prorated: Dict[str, float] = {}
-    sinking_fund_items: List[Dict[str, Any]] = []
+    category_prorated: dict[str, float] = {}
+    sinking_fund_items: list[dict[str, Any]] = []
 
     for item in raw_expenses:
         status_info = calculate_status(item, today)
@@ -389,7 +390,7 @@ def api_create_expense(expense: ExpenseCreate, current_user: UserProfile = Depen
         res = pb.create_expense(expense.model_dump())
         return res
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Failed to create expense: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Failed to create expense: {str(e)}") from e
 
 
 @app.put("/api/expenses/{expense_id}")
@@ -401,7 +402,7 @@ def api_update_expense(
         res = pb.update_expense(expense_id, update_data)
         return res
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Failed to update expense: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Failed to update expense: {str(e)}") from e
 
 
 @app.delete("/api/expenses/{expense_id}")
@@ -410,14 +411,14 @@ def api_delete_expense(expense_id: str, current_user: UserProfile = Depends(get_
         pb.delete_expense(expense_id)
         return {"success": True}
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Failed to delete expense: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Failed to delete expense: {str(e)}") from e
 
 
 @app.post("/api/expenses/{expense_id}/pay")
 async def api_pay_expense(
     expense_id: str,
     request: Request,
-    invoice_file: Optional[UploadFile] = File(None),
+    invoice_file: UploadFile | None = File(None),
     current_user: UserProfile = Depends(get_current_user),
 ):
     today = datetime.date.today()
@@ -489,7 +490,7 @@ async def api_pay_expense(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Failed to record payment: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Failed to record payment: {str(e)}") from e
 
 
 @app.get("/api/payments")
@@ -519,7 +520,7 @@ def api_get_payments(current_user: UserProfile = Depends(get_current_user)):
             })
         return processed_payments
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Failed to fetch payment history: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Failed to fetch payment history: {str(e)}") from e
 
 
 # --- PRICE HISTORY & INFLATION TRACKER ENDPOINT ---
@@ -557,7 +558,7 @@ def api_expense_price_history(expense_id: str, current_user: UserProfile = Depen
             "history": history,
         }
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Failed to calculate price history: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Failed to calculate price history: {str(e)}") from e
 
 
 # --- EMAIL NOTIFICATION ENDPOINT ---
@@ -576,7 +577,7 @@ def api_send_email_notifications(current_user: UserProfile = Depends(get_current
             return {"success": True, "message": f"Wysłano powiadomienie e-mail z {len(notifications)} alertami."}
         return {"success": False, "message": "Nie zdołano wysłać powiadomienia e-mail."}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Błąd wysyłki e-mail SMTP: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Błąd wysyłki e-mail SMTP: {str(e)}") from e
 
 
 # --- REPORTS EXPORT ENDPOINTS (PDF & CSV) ---
@@ -707,7 +708,7 @@ def api_export_csv_report(lang: str = "pl", current_user: UserProfile = Depends(
                 try:
                     y, m = period_str.split("-")
                     period_str = f"{month_names[int(m)-1]} {y}"
-                except:
+                except (ValueError, IndexError):
                     pass
 
             writer.writerow([
@@ -726,7 +727,7 @@ def api_export_csv_report(lang: str = "pl", current_user: UserProfile = Depends(
             headers={"Content-Disposition": "attachment; filename=homebudget_raport.csv"},
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Błąd generowania CSV: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Błąd generowania CSV: {str(e)}") from e
 
 
 @app.get("/api/reports/pdf")
@@ -752,5 +753,5 @@ def api_export_pdf_report(lang: str = "pl", current_user: UserProfile = Depends(
             headers={"Content-Disposition": "attachment; filename=homebudget_raport.pdf"},
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Błąd generowania PDF: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Błąd generowania PDF: {str(e)}") from e
 

@@ -1,0 +1,25 @@
+[tool.ruff]
+line-length = 120
+# Must match the Containerfile's base image. Without it ruff assumes the newest Python and
+# rewrites annotations to syntax the runtime may not have — `X | None` is a 3.10 feature, and
+# it is evaluated at runtime by FastAPI and pydantic, not just by a type checker.
+target-version = "py312"
+
+[tool.ruff.lint]
+# Beyond ruff's defaults (E4/E7/E9/F): import sorting, bugbear's correctness checks, and
+# pyupgrade. E501 is deliberately absent — line length is the formatter's job, and enforcing it
+# separately turns every long string literal into a CI failure.
+select = ["E4", "E7", "E9", "F", "I", "B", "UP"]
+
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI's whole dependency-injection idiom is a call in an argument default, so B008 fires on
+# every route that uses it. These are the framework's own markers, not accidental shared state.
+extend-immutable-calls = [
+    "fastapi.Body",
+    "fastapi.Depends",
+    "fastapi.File",
+    "fastapi.Form",
+    "fastapi.Header",
+    "fastapi.Path",
+    "fastapi.Query",
+]
