@@ -1,5 +1,5 @@
 import datetime
-import pytest
+
 from main import calculate_status, get_days_in_month
 
 

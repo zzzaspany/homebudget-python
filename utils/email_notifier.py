@@ -1,14 +1,15 @@
 import os
 import smtplib
-from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from typing import List, Dict, Any
+from email.mime.text import MIMEText
+from typing import Any
+
 from dotenv import load_dotenv
 
 load_dotenv()
 
 
-def send_payment_reminder_email(notifications: List[Dict[str, Any]]) -> bool:
+def send_payment_reminder_email(notifications: list[dict[str, Any]]) -> bool:
     """
     Wysyła wiadomość e-mail z podsumowaniem alertów opłat (zaległe i zbliżające się).
     """

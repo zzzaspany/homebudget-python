@@ -1,12 +1,12 @@
 import io
 from datetime import datetime
-from typing import List, Dict, Any
+from typing import Any
 
-from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.pdfgen import canvas
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 
 class NumberedCanvas(canvas.Canvas):
@@ -32,9 +32,9 @@ class NumberedCanvas(canvas.Canvas):
 
 
 def generate_homebudget_pdf_report(
-    kpis: Dict[str, Any],
-    expenses: List[Dict[str, Any]],
-    payments: List[Dict[str, Any]],
+    kpis: dict[str, Any],
+    expenses: list[dict[str, Any]],
+    payments: list[dict[str, Any]],
     user_name: str = "Użytkownik",
     lang: str = "pl",
 ) -> bytes:
@@ -280,7 +280,7 @@ def generate_homebudget_pdf_report(
             try:
                 y, m = period_str.split("-")
                 period_str = f"{month_names[int(m)-1]} {y}"
-            except:
+            except (ValueError, IndexError):
                 pass
 
         pay_table_data.append([
