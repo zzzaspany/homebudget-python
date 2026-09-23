@@ -15,6 +15,12 @@ COPY static/ static/
 COPY templates/ templates/
 
 
+# Run as a non-root user. Nothing here needs root: the app binds 8000, which is above the
+# privileged range, and writes nothing outside the uploads volume.
+RUN useradd --system --uid 1001 --create-home --home-dir /home/app app \
+    && chown -R app:app /app
+USER app
+
 # Expose port
 EXPOSE 8000
 
